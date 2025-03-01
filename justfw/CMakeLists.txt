@@ -58,3 +58,4 @@ target_include_directories(justFW PUBLIC ${INCLUDES})
 
 
 target_include_directories(justFW PUBLIC interface)
+target_include_directories(justFW PRIVATE config)

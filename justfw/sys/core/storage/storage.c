@@ -4,6 +4,8 @@
 #include "easyflash.h"
 
 #ifdef STORAGE_USE_CLI
+#include <stdio.h>
+
 #include "FreeRTOS_CLI.h"
 #include "console_colors.h"
 #include "s2j.h"
@@ -96,9 +98,9 @@ static BaseType_t prvEnvCommand(char* pcWriteBuffer,
         ret = ef_env_set_default();
         goto on_ret;
     } else if (strncmp((char*)pcParameter, "list", xParameterStringLength) == 0) {
-        // USB_Printf(YELLOW);
+        // printf(YELLOW);
         ef_print_env();
-        // USB_Printf(NC);
+        // printf(NC);
     } else
         goto on_err_use;
 

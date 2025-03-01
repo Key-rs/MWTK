@@ -28,6 +28,7 @@
 
 #include <easyflash.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "BSP_W25Qx.h"
 
@@ -144,7 +145,7 @@ void ef_log_debug(const char *file, const long line, const char *format, ...) {
     va_start(args, format);
 
     /* You can add your code under here. */
-    USB_VSNPrintf(format, args);
+    vprintf(format, args);
 
     va_end(args);
 
@@ -164,7 +165,7 @@ void ef_log_info(const char *format, ...) {
     va_start(args, format);
 
     /* You can add your code under here. */
-    USB_VSNPrintf(format, args);
+    vprintf(format, args);
 
     va_end(args);
 }
@@ -181,7 +182,7 @@ void ef_print(const char *format, ...) {
     va_start(args, format);
 
     /* You can add your code under here. */
-    USB_VSNPrintf(format, args);
+    vprintf(format, args);
 
     va_end(args);
 }

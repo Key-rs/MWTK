@@ -4,10 +4,11 @@
 
 #include "tinybus.h"
 
+#include "intf_tinybus.h"
 
 Bus_TopicHandleTypeDef *g_topic_root;
 Bus_PtrTypeDef *g_ptr_root;
-osMessageQId g_bus_callback_queue;
+// osMessageQId g_bus_callback_queue;
 
 /**
  * @brief 搜索话题
@@ -15,7 +16,7 @@ osMessageQId g_bus_callback_queue;
  * @return 话题句柄(当话题不存在时返回NULL)
  */
 Bus_TopicHandleTypeDef *Bus_TopicSearch(char *topicName) {
-    //遍历所有话题，如果找到了同名话题，返回该话题句柄
+    // 遍历所有话题，如果找到了同名话题，返回该话题句柄
     Bus_TopicHandleTypeDef *it;
     for (it = g_topic_root; it != NULL; it = it->_next_topic) {
         if (strcmp(it->name, topicName) == 0)
@@ -24,7 +25,6 @@ Bus_TopicHandleTypeDef *Bus_TopicSearch(char *topicName) {
     return NULL;
 }
 
-
 /**
  * @brief 话题注册
  * @param topic_name:话题名称
@@ -32,15 +32,15 @@ Bus_TopicHandleTypeDef *Bus_TopicSearch(char *topicName) {
  * @note 如果先前存在同名话题，则会直接返回该话题句柄
  */
 Bus_TopicHandleTypeDef *Bus_TopicRegister(char *topicName) {
-    //遍历所有话题，如果找到了同名话题，返回该话题句柄
+    // 遍历所有话题，如果找到了同名话题，返回该话题句柄
     Bus_TopicHandleTypeDef *it;
     for (it = g_topic_root; it != NULL; it = it->_next_topic) {
         if (strcmp(it->name, topicName) == 0)
             return it;
     }
 
-    //如果没有找到同名话题，创建一个新的话题句柄并插入到话题链表末尾
-    Bus_TopicHandleTypeDef *topic = (Bus_TopicHandleTypeDef *) JUST_MALLOC(sizeof(Bus_TopicHandleTypeDef));
+    // 如果没有找到同名话题，创建一个新的话题句柄并插入到话题链表末尾
+    Bus_TopicHandleTypeDef *topic = (Bus_TopicHandleTypeDef *)JUST_MALLOC(sizeof(Bus_TopicHandleTypeDef));
     topic->name = topicName;
     topic->first_subscriber = NULL;
     topic->_next_topic = NULL;
@@ -51,7 +51,6 @@ Bus_TopicHandleTypeDef *Bus_TopicRegister(char *topicName) {
     return topic;
 }
 
-
 /**
  * @brief 订阅话题
  * @param topic:话题句柄
@@ -61,13 +60,13 @@ Bus_TopicHandleTypeDef *Bus_TopicRegister(char *topicName) {
  */
 Bus_SubscriberTypeDef *
 Bus_Subscribe(Bus_TopicHandleTypeDef *topic, void (*callback)(void *message, Bus_TopicHandleTypeDef *topic)) {
-    Bus_SubscriberTypeDef *subscriber = (Bus_SubscriberTypeDef *) JUST_MALLOC(sizeof(Bus_SubscriberTypeDef));
+    Bus_SubscriberTypeDef *subscriber = (Bus_SubscriberTypeDef *)JUST_MALLOC(sizeof(Bus_SubscriberTypeDef));
     subscriber->callback = callback;
     subscriber->enable = 1;
     subscriber->_next_subscriber = NULL;
     subscriber->topic = topic;
 
-    //把订阅插入到订阅链表的末尾
+    // 把订阅插入到订阅链表的末尾
     if (topic->first_subscriber != NULL) {
         Bus_SubscriberTypeDef *it;
         for (it = topic->first_subscriber; it->_next_subscriber != NULL; it = it->_next_subscriber);
@@ -77,7 +76,6 @@ Bus_Subscribe(Bus_TopicHandleTypeDef *topic, void (*callback)(void *message, Bus
 
     return subscriber;
 }
-
 
 /**
  * @brief 从话题名字订阅话题
@@ -95,10 +93,8 @@ Bus_SubscribeFromName(char *topic_name, void (*callback)(void *message, Bus_Topi
     return Bus_Subscribe(topic, callback);
 }
 
-
 void Bus_MainLoop() {
-    //遍历所有话题，如果有订阅者，则调用其回调函数
-
+    // 遍历所有话题，如果有订阅者，则调用其回调函数
 }
 
 /**
@@ -114,7 +110,6 @@ void Bus_Publish(Bus_TopicHandleTypeDef *topic, void *message) {
     }
 }
 
-
 /**
  * @brief 从话题名字发布消息
  * @param topic_name:话题名称
@@ -127,7 +122,6 @@ void Bus_PublishFromName(char *topic_name, void *message) {
         topic = Bus_TopicRegister(topic_name);
     Bus_Publish(topic, message);
 }
-
 
 /**
  * @brief 共享指针
@@ -143,7 +137,7 @@ void *Bus_SharePtr(char *ptrName, size_t len) {
         if (strcmp(it->name, ptrName) == 0)
             return it->ptr;
     }
-    //如果不存在，则创建指针
+    // 如果不存在，则创建指针
 
     for (it = g_ptr_root; it->_next_ptr != NULL; it = it->_next_ptr);
     Bus_PtrTypeDef *bus_ptr = JUST_MALLOC(sizeof(Bus_PtrTypeDef));
@@ -152,7 +146,7 @@ void *Bus_SharePtr(char *ptrName, size_t len) {
     bus_ptr->_next_ptr = NULL;
     it->_next_ptr = bus_ptr;
 
-    //以防万一给内存个清零
+    // 以防万一给内存个清零
     memset(bus_ptr->ptr, 0, len);
 
     return bus_ptr->ptr;
@@ -162,15 +156,13 @@ void *Bus_SharePtr(char *ptrName, size_t len) {
  * @brief 发布共享指针
  * @note 不考虑重命名错误
  */
-void Publish_SharePtr(char *ptrName,size_t len,void*ptr)
-{
+void Publish_SharePtr(char *ptrName, size_t len, void *ptr) {
     Bus_PtrTypeDef *it;
-    for (it = g_ptr_root; it->_next_ptr != NULL; it = it->_next_ptr)
-    ;
+    for (it = g_ptr_root; it->_next_ptr != NULL; it = it->_next_ptr);
     Bus_PtrTypeDef *bus_ptr = JUST_MALLOC(sizeof(Bus_PtrTypeDef));
     bus_ptr->ptr = JUST_MALLOC(len);
     bus_ptr->name = ptrName;
-    bus_ptr->ptr=ptr;
+    bus_ptr->ptr = ptr;
     bus_ptr->_next_ptr = NULL;
     it->_next_ptr = bus_ptr;
 }
@@ -192,7 +184,6 @@ uint8_t Bus_Init() {
     g_ptr_root->_next_ptr = NULL;
     if (g_ptr_root == NULL)
         return 1;
-
 
     return 0;
 }
