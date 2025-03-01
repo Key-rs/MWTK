@@ -1,0 +1,46 @@
+
+# 忽略keil相关文件
+*.bak
+*.scvd
+*.ini
+*.Administrator
+*.hp
+*.uvoptx
+
+DebugConfig/
+OBJ/
+MDK-ARM/
+
+# 忽略VScode相关文件
+.vscode/
+
+# 忽略Clion相关文件
+cmake-build-debug/
+.idea/
+build
+
+# 忽略STM32CubeMX相关文件
+/Core/
+/Drivers/
+/Middlewares/
+# test/
+USB_DEVICE/
+*.id
+.cproject
+.mxproject
+.project
+# /CMakeLists.txt
+CMakeLists_template.txt
+
+build.ninja
+cmake_install.cmake
+CMakeCache.txt
+CMakePresets.json
+compile_commands.json
+startup_stm32f446xx.s
+STM32F446RCTx_FLASH.ld
+
+cmake
+CMakeFiles
+
+justfw/modules/logic/test/
