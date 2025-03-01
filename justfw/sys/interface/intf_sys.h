@@ -1,13 +1,18 @@
 #ifndef __INTF_SYS_H
 #define __INTF_SYS_H
 
+/* FreeRTOS必须在前面 */
+#include "FreeRTOS.h"
+
+/* bsp */
 #include "intf_can.h"
-#include "intf_sys.h"
-#include "intf_tinybus.h"
 #include "intf_uart.h"
 
+/* 内置数据共享 */
+#include "intf_stream.h"
+#include "intf_tinybus.h"
+
 /* 第三方库接口, JUSTFW不再继续封装 */
-#include "FreeRTOS.h"
 #include "easyflash.h"
 #include "task.h"
 
