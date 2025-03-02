@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "interface.h"
+#include "intf_sys.h"
 
 typedef struct Bus_TopicHandle Bus_TopicHandleTypeDef;
 typedef struct Bus_Subscriber Bus_SubscriberTypeDef;
@@ -94,5 +94,7 @@ void Bus_PublishFromName(char *topic_name, void *message);
  * @note 如果不存在该名字的指针，则会自动创申请一块新的空间
  */
 void *Bus_SharePtr(char *ptrName, size_t len);
+
+void Bus_SharePtrStatic(char *ptrName, void *static_data);
 
 #endif

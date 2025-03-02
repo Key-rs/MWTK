@@ -1,104 +1,70 @@
 #include "BSP_USB.h"
 
-#include <stdarg.h>
+#include "BSP_USB_cfg.h"
+#include "intf_sys.h"
+#include "stream_buffer.h"
 
-#include "BSP_USB_config.h"
-#include "fifo.h"
+static INTF_StreamSharerTypedef *share_stream_usb_rx;  // USB RX 输入共享流
+static INTF_StreamListenerTypedef *listener_usb_tx;    // USB TX输出流监听器
+static StreamBufferHandle_t stream_usb_tx;             // USB TX输出流缓冲区
+static uint8_t _stream_usb_tx_static[BSP_USB_TX_STREAM_BUFFER_SIZE];
+static StaticStreamBuffer_t xStreamBufferStructUsbTx;
 
-static Bus_SubscriberTypeDef *g_bsp_usb_tx;
-static Bus_TopicHandleTypeDef *g_bsp_usb_rx;
+#ifdef BSP_USB_USE_BUS
+static Bus_SubscriberTypeDef *sub_usb_tx;
+static Bus_TopicHandleTypeDef *top_usb_rx;
 
-static fifo_t *g_bsp_usb_rx_fifo;
+static StreamBufferHandle_t stream_usb_rx_output;  // 注册一个用于推送TinyBus的输出流
+static INTF_StreamListenerTypedef *listener_stream_usb_rx_output;
 
-static uint8_t rx_delay = 0;
-static uint16_t rx_package_index = 0;
-static uint8_t rx_package[BSP_USB_RX_PACKAGE_BUFFER_SIZE];
-
-static uint8_t tx_buffer[BSP_USB_TX_BUFFER_SIZE];
-static uint16_t tx_buffer_index = 0;
+static void stream_usb_rx_output_ondata(INTF_StreamListenerTypedef *listener) {
+    (void)listener;
+    uint8_t buffer[BSP_USB_RX_STREAM_BUFFER_SIZE];
+    uint16_t len = xStreamBufferReceive(stream_usb_rx_output, buffer, BSP_USB_TX_STREAM_BUFFER_SIZE, 0);
+    INTF_Serial_MessageTypeDef msg = {
+        .data = buffer,
+        .len = len};
+    Bus_Publish(top_usb_rx, &msg);
+}
 
 static void BSP_USB_TX_CallBack(void *message, Bus_TopicHandleTypeDef *topic) {
-    INTF_UART_MessageTypeDef *msg = (INTF_UART_MessageTypeDef *)message;
-    if (tx_buffer_index + msg->len > BSP_USB_TX_BUFFER_SIZE)
-        return;
-
-    memcpy(tx_buffer + tx_buffer_index, msg->data, msg->len);
-    tx_buffer_index += msg->len;
+    INTF_Serial_MessageTypeDef *msg = (INTF_Serial_MessageTypeDef *)message;
+    xStreamBufferSend(stream_usb_tx, msg->data, msg->len, portMAX_DELAY);
 }
+#endif
 
 // USB接收回调
 void usbd_cdc_rx_callback(uint8_t *data, uint32_t len) {
-    if (rx_delay > 0 || len == BSP_USB_RX_PACKAGE_MAX_SIZE) {
-        // 发生了分包
-        if (len + rx_package_index < BSP_USB_RX_PACKAGE_BUFFER_SIZE) {
-            memcpy(rx_package + rx_package_index, data, len);
-            rx_package_index += len;
-            if (len == BSP_USB_RX_PACKAGE_MAX_SIZE)
-                rx_delay = BSP_USB_RX_PACKAGE_DLAY;
-            else
-                rx_delay = 0;
-        }
-    } else {
-        INTF_UART_MessageTypeDef message = {
-            .data = data,
-            .len = len};
-        fifo_put(g_bsp_usb_rx_fifo, &message);
-    }
+    share_stream_usb_rx->write(share_stream_usb_rx, data, len, true);
 }
 
-static void BSP_USB_MainLoop() {
-    while (1) {
-        INTF_UART_MessageTypeDef msg;
+static void on_usb_tx(INTF_StreamListenerTypedef *listener) {
+    (void)listener;
 
-        if (rx_delay == 0 && rx_package_index > 0) {
-            msg.data = rx_package;
-            msg.len = rx_package_index;
-            fifo_put(g_bsp_usb_rx_fifo, &msg);
-            rx_package_index = 0;
-        } else if (rx_delay > 0)
-            rx_delay--;
-
-        while (!fifo_is_empty(g_bsp_usb_rx_fifo)) {
-            fifo_get(g_bsp_usb_rx_fifo, &msg);
-            Bus_Publish(g_bsp_usb_rx, &msg);
-        }
-
-        if (tx_buffer_index > 0) {
-            extern uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
-            CDC_Transmit_FS(tx_buffer, tx_buffer_index);
-            tx_buffer_index = 0;
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(1));
-    }
+    uint8_t buffer[BSP_USB_TX_STREAM_BUFFER_SIZE];
+    uint16_t len = xStreamBufferReceive(stream_usb_tx, buffer, BSP_USB_TX_STREAM_BUFFER_SIZE, 0);
+    extern uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
+    CDC_Transmit_FS(buffer, len);
 }
 
-void BSP_USB_Init(void) {
-    g_bsp_usb_rx = Bus_TopicRegister(BSP_USB_RX_TOPIC_NAME);
-    g_bsp_usb_tx = Bus_SubscribeFromName(BSP_USB_TX_TOPIC_NAME, BSP_USB_TX_CallBack);
+void BSP_USB_Init() {
+    stream_usb_tx = xStreamBufferCreateStatic(BSP_USB_TX_STREAM_BUFFER_SIZE, 1, _stream_usb_tx_static, &xStreamBufferStructUsbTx);
+    share_stream_usb_rx = StreamSharer_Register(BSP_USB_RX_STREAM_BUFFER_SIZE);
+    listener_usb_tx = StreamListener_Register(stream_usb_tx);
+    listener_usb_tx->on_data_received = on_usb_tx;
 
-    g_bsp_usb_rx_fifo = fifo_create(BSP_USB_RX_FIFO_SIZE, sizeof(INTF_UART_MessageTypeDef));
+    Bus_SharePtrStatic(BSP_USB_TX_STREAM_NAME, stream_usb_tx);
+    Bus_SharePtrStatic(BSP_USB_RX_SHARED_STREAM_NAME, share_stream_usb_rx);
 
-    xTaskCreate(BSP_USB_MainLoop,
-                "BSP_USB_Task",
-                256,
-                NULL,
-                1,
-                NULL);
-}
+#ifdef BSP_USB_USE_BUS
+    // 注册一个流用来截取usb_rx 用于TinyBus推送消息
+    stream_usb_rx_output = xStreamBufferCreate(BSP_USB_RX_STREAM_BUFFER_SIZE, 1);
+    share_stream_usb_rx->register_output(share_stream_usb_rx, stream_usb_rx_output);
 
-void USB_VSNPrintf(const char *fmt, va_list args) {
-    size_t len;
-    len = vsnprintf((char *)tx_buffer + tx_buffer_index, BSP_USB_TX_BUFFER_SIZE - tx_buffer_index, fmt, args);
-    tx_buffer_index += len;
-    // extern uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
-    // CDC_Transmit_FS(tx_buffer, tx_buffer_index);
-    // tx_buffer_index = 0;
-}
+    listener_stream_usb_rx_output = StreamListener_Register(stream_usb_rx_output);
+    listener_stream_usb_rx_output->on_data_received = stream_usb_rx_output_ondata;
 
-void USB_Printf(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    USB_VSNPrintf(fmt, args);
-    va_end(args);
+    top_usb_rx = Bus_TopicRegister(BSP_USB_RX_TOPIC_NAME);
+    sub_usb_tx = Bus_SubscribeFromName(BSP_USB_TX_TOPIC_NAME, BSP_USB_TX_CallBack);
+#endif
 }

@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "interface.h"
+#include "intf_sys.h"
 
 /**
  * @brief 话题初始化

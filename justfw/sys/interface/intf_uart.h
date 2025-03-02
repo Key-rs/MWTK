@@ -7,10 +7,4 @@
 
 #include <stdint.h>
 
-typedef struct INTF_UART_Message {
-    uint16_t len;
-    uint8_t *data;
-} INTF_UART_MessageTypeDef;
-
-
-#endif //JUSTFW_INTF_UART_H
+#endif  // JUSTFW_INTF_UART_H

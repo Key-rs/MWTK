@@ -12,7 +12,7 @@
 #include "intf_stream.h"
 #include "intf_tinybus.h"
 
-/* 第三方库接口, JUSTFW不再继续封装 */
+/* 第三方库接口, JUSTFW没有继续封装 */
 #include "easyflash.h"
 #include "task.h"
 

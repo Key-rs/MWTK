@@ -52,14 +52,8 @@
 //>第三:(3)
 #define TINYBUS_TESTSELECT (2)
 
-
-#endif //TINYBUS_ENABLE
-
+#endif  // TINYBUS_ENABLE
 
 //]]]
 
-#endif //JUSTFW_TINYBUS_CONFIG_H
-
-
-
-
+#endif  // JUSTFW_TINYBUS_CONFIG_H

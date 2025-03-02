@@ -16,6 +16,7 @@
 #include "intf_leg.h"
 #include "intf_motor.h"
 #include "intf_navigation.h"
+#include "intf_serial.h"
 #include "intf_shooter.h"
 #include "intf_vision.h"
 // 系统接口

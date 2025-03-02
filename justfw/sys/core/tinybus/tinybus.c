@@ -4,8 +4,6 @@
 
 #include "tinybus.h"
 
-#include "intf_tinybus.h"
-
 Bus_TopicHandleTypeDef *g_topic_root;
 Bus_PtrTypeDef *g_ptr_root;
 // osMessageQId g_bus_callback_queue;
@@ -150,6 +148,26 @@ void *Bus_SharePtr(char *ptrName, size_t len) {
     memset(bus_ptr->ptr, 0, len);
 
     return bus_ptr->ptr;
+}
+
+void Bus_SharePtrStatic(char *ptrName, void *static_data) {
+    Bus_PtrTypeDef *it;
+
+    // 如果存在则不添加
+    for (it = g_ptr_root; it != NULL; it = it->_next_ptr) {
+        if (strcmp(it->name, ptrName) == 0)
+            return;
+    }
+
+    for (it = g_ptr_root; it->_next_ptr != NULL; it = it->_next_ptr);
+    Bus_PtrTypeDef *bus_ptr = JUST_MALLOC(sizeof(Bus_PtrTypeDef));
+
+    bus_ptr->name = ptrName;
+    bus_ptr->ptr = static_data;
+    bus_ptr->_next_ptr = NULL;
+    it->_next_ptr = bus_ptr;
+
+    // return bus_ptr->ptr;
 }
 
 /**

@@ -41,7 +41,7 @@ static void on_start(void *message, Bus_TopicHandleTypeDef *topic) {
 
 // 接受用户数据回调处理
 static void on_rx(void *message, Bus_TopicHandleTypeDef *topic) {
-    INTF_UART_MessageTypeDef *msg = (INTF_UART_MessageTypeDef *)message;
+    INTF_Serial_MessageTypeDef *msg = (INTF_Serial_MessageTypeDef *)message;
 
     for (uint16_t i = 0; i < msg->len; i++) {
         char cRxedChar = msg->data[i];
