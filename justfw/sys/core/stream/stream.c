@@ -5,7 +5,13 @@
 #include "stream_buffer.h"
 #include "stream_cfg.h"
 
-static void INTF_StreamSharer_Write_t(INTF_StreamSharerTypedef *self, uint8_t *data, uint16_t len, bool is_interuput) {
+static bool is_ISR = false;
+
+void Stream_Set_ISR(bool on) {
+    is_ISR = on;
+}
+
+static void INTF_StreamSharer_Write_t(INTF_StreamSharerTypedef *self, uint8_t *data, uint16_t len) {
     if (self == NULL || data == NULL || len == 0)
         return;
 
@@ -15,7 +21,7 @@ static void INTF_StreamSharer_Write_t(INTF_StreamSharerTypedef *self, uint8_t *d
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     // 假设 xStreamBufferSend 是写入流缓冲区的函数
-    if (is_interuput)
+    if (is_ISR)
         xStreamBufferSendFromISR(context->input_stream, data, len, &xHigherPriorityTaskWoken);
     else
         xStreamBufferSend(context->input_stream, data, len, portMAX_DELAY);
@@ -38,11 +44,11 @@ static void INTF_StreamSharer_Destory_t(INTF_StreamSharerTypedef *self) {
 
 static void StreamSharer_RegistOutput_t(INTF_StreamSharerTypedef *self, StreamBufferHandle_t output_stream) {
     Stream_SharerPrivateDataTypedef *private = (Stream_SharerPrivateDataTypedef *)self->_private;
-    ListItem_t new_item;
-    new_item.pvOwner = output_stream;
-    listSET_LIST_ITEM_VALUE(&new_item, 10);  // 优先级为 10
+    ListItem_t *new_item = JUST_MALLOC(sizeof(ListItem_t));
+    new_item->pvOwner = output_stream;
+    listSET_LIST_ITEM_VALUE(new_item, 10);  // 优先级为 10
 
-    vListInsert(&private->output_stream_list, &new_item);
+    vListInsert(&private->output_stream_list, new_item);
 }
 
 static void StreamSharer_RemoveOutput_t(INTF_StreamSharerTypedef *self, StreamBufferHandle_t output_stream) {
@@ -63,7 +69,7 @@ void StreamSharer_onData_t(INTF_StreamListenerTypedef *listener) {
     Stream_SharerPrivateDataTypedef *private = (Stream_SharerPrivateDataTypedef *)instance->_private;
     // 转发输入流到输出流
     uint8_t buff[FORWARD_BUFFER_SIZE];
-    uint16_t len = xStreamBufferReceive(private->input_stream, buff, FORWARD_BUFFER_SIZE, 0);
+    uint16_t len = xStreamBufferReceive(private->input_stream, buff, FORWARD_BUFFER_SIZE, 1);
     if (len > 0) {
         // 将数据转发到所有输出流
         ListItem_t *item = listGET_HEAD_ENTRY(&private->output_stream_list);
@@ -94,7 +100,7 @@ INTF_StreamSharerTypedef *StreamSharer_Register(uint16_t size) {
     // 初始化 instance
     instance->write = INTF_StreamSharer_Write_t;
     instance->register_output = StreamSharer_RegistOutput_t;
-    instance->register_output = StreamSharer_RemoveOutput_t;
+    instance->remove_output = StreamSharer_RemoveOutput_t;
     instance->destroy = INTF_StreamSharer_Destory_t;
     instance->_private = (void *)private;
 
@@ -110,6 +116,8 @@ INTF_StreamSharerTypedef *StreamSharer_Register(uint16_t size) {
 
     // 初始化 private_data
     private->listener = listener;
+    vListInitialise(&private->output_stream_list);
+
     private->input_stream = input_stream;
 
     return instance;
@@ -143,21 +151,27 @@ INTF_StreamListenerTypedef *StreamListener_Register(StreamBufferHandle_t stream)
     listener->context = NULL;
     listener->stream = stream;
     listener->destroy = StreamListener_Destory_t;
-    listener->on_data_received = NULL;
+    listener->on_data_received = StreamSharer_onData_t;
 
-    ListItem_t new_item;
-    new_item.pvOwner = listener;
-    listSET_LIST_ITEM_VALUE(&new_item, 10);  // 优先级为 10
+    ListItem_t *new_item = JUST_MALLOC(sizeof(ListItem_t));
+    new_item->pvOwner = listener;
+    listSET_LIST_ITEM_VALUE(new_item, 10);  // 优先级为 10
 
-    vListInsert(&stream_listener_list, &new_item);
+    vListInsert(&stream_listener_list, new_item);
 
     return listener;
 }
+
+static StreamBufferHandle_t stream_to_print;
 
 /**
  * 流管理任务，用于流消息监听, 处理流回调函数
  */
 static void Stream_ManagerLoop() {
+#include "BSP_USB_cfg.h"
+#include "justfw_cfg.h"
+    stream_to_print = Bus_SharePtr(PRINT_OUTPUT_STREAM_NAME, sizeof(StreamBufferHandle_t));
+
     while (1) {
         ListItem_t *item = listGET_HEAD_ENTRY(&stream_listener_list);
         while (item != listGET_END_MARKER(&stream_listener_list)) {
@@ -168,10 +182,13 @@ static void Stream_ManagerLoop() {
 
             item = listGET_NEXT(item);
         }
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 
 void Stream_Init() {
+    vListInitialise(&stream_listener_list);
+
     xTaskCreate(
         Stream_ManagerLoop,
         "StreamManager",
@@ -180,3 +197,35 @@ void Stream_Init() {
         1,
         NULL);
 }
+
+// int _write(int fd, char *pBuffer, int size) {
+//     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+//     // 假设 xStreamBufferSend 是写入流缓冲区的函数
+//     if (stream_to_print == NULL)
+//         return size;
+//     if (is_ISR)
+//         xStreamBufferSendFromISR(stream_to_print, pBuffer, size, &xHigherPriorityTaskWoken);
+//     else
+//         xStreamBufferSend(stream_to_print, pBuffer, size, portMAX_DELAY);
+
+//     return size;
+// }
+
+/* USER CODE BEGIN PFP */
+#ifdef __GNUC__  // 串口重定向
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif
+PUTCHAR_PROTOTYPE {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    if (stream_to_print == NULL)
+        return ch;
+
+    if (is_ISR)
+        xStreamBufferSendFromISR(stream_to_print, &ch, 1, &xHigherPriorityTaskWoken);
+    else
+        xStreamBufferSend(stream_to_print, &ch, 1, portMAX_DELAY);
+    return ch;
+}
+/* USER CODE END PFP */

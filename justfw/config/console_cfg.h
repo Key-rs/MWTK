@@ -1,3 +1,4 @@
+#include "BSP_USB_cfg.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "task.h"
@@ -16,5 +17,7 @@
  * available.  等待保护UART的互斥锁变为的最大可用时间。*/
 #define cmdMAX_MUTEX_WAIT pdMS_TO_TICKS(300)
 
-#define CONSOLE_INPUT_TOPIC_NAME "USB_RX"
-#define CONSOLE_OUTPUT_TOPIC_NAME "USB_TX"
+#define cmdMAX_INPUT_STREAM 200
+
+#define CLI_INPUT_STREAM_NAME BSP_USB_RX_SHARED_STREAM_NAME
+#define CLI_OUTPUT_STREAM_NAME BSP_USB_TX_STREAM_NAME

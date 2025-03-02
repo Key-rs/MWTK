@@ -7,7 +7,6 @@
 static INTF_StreamSharerTypedef *share_stream_usb_rx;  // USB RX 输入共享流
 static INTF_StreamListenerTypedef *listener_usb_tx;    // USB TX输出流监听器
 static StreamBufferHandle_t stream_usb_tx;             // USB TX输出流缓冲区
-static uint8_t _stream_usb_tx_static[BSP_USB_TX_STREAM_BUFFER_SIZE];
 static StaticStreamBuffer_t xStreamBufferStructUsbTx;
 
 #ifdef BSP_USB_USE_BUS
@@ -35,24 +34,28 @@ static void BSP_USB_TX_CallBack(void *message, Bus_TopicHandleTypeDef *topic) {
 
 // USB接收回调
 void usbd_cdc_rx_callback(uint8_t *data, uint32_t len) {
-    share_stream_usb_rx->write(share_stream_usb_rx, data, len, true);
+    Stream_Set_ISR(true);
+    share_stream_usb_rx->write(share_stream_usb_rx, data, len);
+    Stream_Set_ISR(false);
 }
 
 static void on_usb_tx(INTF_StreamListenerTypedef *listener) {
     (void)listener;
 
-    uint8_t buffer[BSP_USB_TX_STREAM_BUFFER_SIZE];
+    uint8_t buffer[BSP_USB_TX_STREAM_BUFFER_SIZE] = {0};
     uint16_t len = xStreamBufferReceive(stream_usb_tx, buffer, BSP_USB_TX_STREAM_BUFFER_SIZE, 0);
     extern uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
     CDC_Transmit_FS(buffer, len);
 }
 
 void BSP_USB_Init() {
-    stream_usb_tx = xStreamBufferCreateStatic(BSP_USB_TX_STREAM_BUFFER_SIZE, 1, _stream_usb_tx_static, &xStreamBufferStructUsbTx);
+    // stream_usb_tx = Bus_SharePtr(BSP_USB_TX_STREAM_NAME, sizeof(StreamBufferHandle_t));
+    // share_stream_usb_rx = Bus_SharePtr(BSP_USB_RX_SHARED_STREAM_NAME, sizeof(INTF_StreamSharerTypedef));
+    stream_usb_tx = xStreamBufferCreate(BSP_USB_TX_STREAM_BUFFER_SIZE, 1);
     share_stream_usb_rx = StreamSharer_Register(BSP_USB_RX_STREAM_BUFFER_SIZE);
     listener_usb_tx = StreamListener_Register(stream_usb_tx);
     listener_usb_tx->on_data_received = on_usb_tx;
-
+    // Bus_SharePtr(BSP_USB_TX_STREAM_NAME, sizeof(struct StreamBufferDef_t));
     Bus_SharePtrStatic(BSP_USB_TX_STREAM_NAME, stream_usb_tx);
     Bus_SharePtrStatic(BSP_USB_RX_SHARED_STREAM_NAME, share_stream_usb_rx);
 

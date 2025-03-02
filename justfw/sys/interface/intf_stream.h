@@ -13,7 +13,7 @@
 typedef struct INTF_StreamSharer {
     void (*register_output)(struct INTF_StreamSharer *self, StreamBufferHandle_t output_stream);  // 注册输出流(这里需要注册而不是直接获得输出流实例, 主要是为了将消息发送者和消息接收方彻底解耦)
     void (*remove_output)(struct INTF_StreamSharer *self, StreamBufferHandle_t output_stream);
-    void (*write)(struct INTF_StreamSharer *self, uint8_t *data, uint16_t len, bool is_interupt);  // 写入共享流
+    void (*write)(struct INTF_StreamSharer *self, uint8_t *data, uint16_t len);  // 写入共享流
     // StreamBufferHandle_t input_stream;                                                             // 输入流
     void (*destroy)(struct INTF_StreamSharer *self);  // 销毁共享流
     void *_private;                                   // 内部私有数据(不允许访问)
@@ -42,5 +42,7 @@ typedef struct INTF_StreamListener {
  * @return 成功返回实例指针，失败返回 NULL
  */
 INTF_StreamListenerTypedef *StreamListener_Register(StreamBufferHandle_t stream);
+
+void Stream_Set_ISR(bool on);
 
 #endif
