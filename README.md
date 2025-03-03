@@ -80,32 +80,7 @@ JUSTOS/
 │
 └─tests/                        # 测试代码，用于单元测试和集成测试
 ```
-
----
-
-## **贡献指南**
-
-我们欢迎任何形式的贡献！如果您希望参与 JUSTOS 的开发，请遵循以下步骤：
-1. Fork 项目并创建分支。
-2. 提交 Pull Request 并描述您的更改。
-
-更多贡献信息，请参阅 [CONTRIBUTING.md](docs/contributing.md)。
-
----
-
-## **支持与反馈**
-
-如果您在使用 JUSTOS 的过程中遇到问题，或者有任何改进建议，请通过以下方式联系我们：
-- **GitHub Issues**：[提交 Issue](https://github.com/your-repo/JUSTOS/issues)
-- **邮件**：support@justos.org
-- **社区论坛**：[访问论坛](https://forum.justos.org)
-
----
-
-以下是更新后的 **TODO** 部分，新增了 **CLI 部分**，详细列出了 CLI 的功能模块和待完成任务：
-
----
-
+----
 # **TODO**
 
 - [ ] 完善DOC readme文档
@@ -185,9 +160,6 @@ JUSTOS/
 
 通过新增 **注意** 部分，明确告知开发者 JUSTOS 的当前状态和潜在风险，同时鼓励社区参与贡献，共同推动项目发展。
 
-## **许可证**
-
-JUSTOS 采用 [MIT 许可证](LICENSE)，允许自由使用、修改和分发。请查看 `LICENSE` 文件以获取更多详细信息。
 ---
 
 ## **致谢**
