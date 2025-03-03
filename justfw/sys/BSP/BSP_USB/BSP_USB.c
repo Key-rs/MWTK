@@ -34,9 +34,7 @@ static void BSP_USB_TX_CallBack(void *message, Bus_TopicHandleTypeDef *topic) {
 
 // USB接收回调
 void usbd_cdc_rx_callback(uint8_t *data, uint32_t len) {
-    Stream_Set_ISR(true);
     share_stream_usb_rx->write(share_stream_usb_rx, data, len);
-    Stream_Set_ISR(false);
 }
 
 static void on_usb_tx(INTF_StreamListenerTypedef *listener) {

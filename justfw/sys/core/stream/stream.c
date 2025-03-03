@@ -5,12 +5,6 @@
 #include "stream_buffer.h"
 #include "stream_cfg.h"
 
-static bool is_ISR = false;
-
-void Stream_Set_ISR(bool on) {
-    is_ISR = on;
-}
-
 static void INTF_StreamSharer_Write_t(INTF_StreamSharerTypedef *self, uint8_t *data, uint16_t len) {
     if (self == NULL || data == NULL || len == 0)
         return;
@@ -21,7 +15,7 @@ static void INTF_StreamSharer_Write_t(INTF_StreamSharerTypedef *self, uint8_t *d
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     // 假设 xStreamBufferSend 是写入流缓冲区的函数
-    if (is_ISR)
+    if (xPortIsInsideInterrupt())
         xStreamBufferSendFromISR(context->input_stream, data, len, &xHigherPriorityTaskWoken);
     else
         xStreamBufferSend(context->input_stream, data, len, portMAX_DELAY);
@@ -198,34 +192,34 @@ void Stream_Init() {
         NULL);
 }
 
-// int _write(int fd, char *pBuffer, int size) {
-//     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//     // 假设 xStreamBufferSend 是写入流缓冲区的函数
-//     if (stream_to_print == NULL)
-//         return size;
-//     if (is_ISR)
-//         xStreamBufferSendFromISR(stream_to_print, pBuffer, size, &xHigherPriorityTaskWoken);
-//     else
-//         xStreamBufferSend(stream_to_print, pBuffer, size, portMAX_DELAY);
-
-//     return size;
-// }
-
-/* USER CODE BEGIN PFP */
-#ifdef __GNUC__  // 串口重定向
-#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif
-PUTCHAR_PROTOTYPE {
+int _write(int fd, char *pBuffer, int size) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    // 假设 xStreamBufferSend 是写入流缓冲区的函数
     if (stream_to_print == NULL)
-        return ch;
-
-    if (is_ISR)
-        xStreamBufferSendFromISR(stream_to_print, &ch, 1, &xHigherPriorityTaskWoken);
+        return size;
+    if (xPortIsInsideInterrupt())
+        xStreamBufferSendFromISR(stream_to_print, pBuffer, size, &xHigherPriorityTaskWoken);
     else
-        xStreamBufferSend(stream_to_print, &ch, 1, portMAX_DELAY);
-    return ch;
+        xStreamBufferSend(stream_to_print, pBuffer, size, portMAX_DELAY);
+
+    return size;
 }
-/* USER CODE END PFP */
+
+// /* USER CODE BEGIN PFP */
+// #ifdef __GNUC__  // 串口重定向
+// #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+// #else
+// #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+// #endif
+// PUTCHAR_PROTOTYPE {
+//     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+//     if (stream_to_print == NULL)
+//         return ch;
+
+//     if (xPortIsInsideInterrupt())
+//         xStreamBufferSendFromISR(stream_to_print, &ch, 1, &xHigherPriorityTaskWoken);
+//     else
+//         xStreamBufferSend(stream_to_print, &ch, 1, portMAX_DELAY);
+//     return ch;
+// }
+// /* USER CODE END PFP */

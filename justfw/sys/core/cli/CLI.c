@@ -26,7 +26,6 @@ static StreamBufferHandle_t stream_cli_input;
 static void on_start(void *message, Bus_TopicHandleTypeDef *topic) {
     // USB_Printf("Hello!\nJUSTOS v0.1\n>");
     // 这里展示欢迎信息
-    Stream_Set_ISR(true);
     printf(BLUE "\n");
     printf("    /$$$$$ /$$   /$$  /$$$$$$  /$$$$$$$$  /$$$$$$   /$$$$$$ \n");
     printf("   |__  $$| $$  | $$ /$$__  $$|__  $$__/ /$$__  $$ /$$__  $$\n");
@@ -41,7 +40,6 @@ static void on_start(void *message, Bus_TopicHandleTypeDef *topic) {
     printf("Welecome use justos!\n");
     printf("System Version: " SYS_VERSION "\n\n");
     printf(">");
-    Stream_Set_ISR(false);
 }
 
 static void CLI_MainLoop() {
@@ -93,6 +91,10 @@ static void CLI_MainLoop() {
                     cInputString[ucInputIndex] = cRxedChar;
                     ucInputIndex++;
                 }
+            } else if (cRxedChar == 0x0C) {
+                // 清屏
+                printf("\033[2J\033[H");
+                printf(">");
             }
         }
     }
