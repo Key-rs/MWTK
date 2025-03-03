@@ -30,8 +30,8 @@ INTF_StreamSharerTypedef *StreamSharer_Register(uint16_t size);
  */
 typedef struct INTF_StreamListener {
     StreamBufferHandle_t stream;                                 // 监听的流
-    void (*on_data_received)(struct INTF_StreamListener *self);  // 数据接收回调
-    void *context;                                               // 用户上下文数据
+    void (*on_data_received)(struct INTF_StreamListener *self);  // 数据接收回调(需要调用方实现该方法)
+    void *context;                                               // 用户上下文数据(允许调用方存储数据)
     void (*destroy)(struct INTF_StreamListener *self);           // 销毁监听器
 } INTF_StreamListenerTypedef;
 

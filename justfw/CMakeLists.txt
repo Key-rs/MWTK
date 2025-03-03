@@ -56,6 +56,8 @@ target_include_directories(justFW PUBLIC ${INCLUDES})
 FIND_INCLUDE_DIR(INCLUDES sys)
 target_include_directories(justFW PUBLIC ${INCLUDES})
 
+FIND_INCLUDE_DIR(INCLUDES config)
+target_include_directories(justFW PUBLIC ${INCLUDES})
 
 target_include_directories(justFW PUBLIC interface)
-target_include_directories(justFW PRIVATE config)
+# target_include_directories(justFW PRIVATE config)
