@@ -1,71 +1,64 @@
-#include "BSP_USB.h"
-
 #include "BSP_USB_cfg.h"
 #include "intf_sys.h"
-#include "stream_buffer.h"
 
-static INTF_StreamSharerTypedef *share_stream_usb_rx;  // USB RX 输入共享流
-static INTF_StreamListenerTypedef *listener_usb_tx;    // USB TX输出流监听器
-static StreamBufferHandle_t stream_usb_tx;             // USB TX输出流缓冲区
-static StaticStreamBuffer_t xStreamBufferStructUsbTx;
+static INTF_StreamSharerTypedef *usb_rx_sharer;      // USB RX 数据共享器
+static INTF_StreamListenerTypedef *usb_tx_listener;  // USB TX 数据监听器
+static StreamBufferHandle_t usb_tx_buffer;           // USB TX 数据缓冲区
+static StaticStreamBuffer_t usb_tx_buffer_struct;    // USB TX 静态缓冲区结构
 
-#ifdef BSP_USB_USE_BUS
-static Bus_SubscriberTypeDef *sub_usb_tx;
-static Bus_TopicHandleTypeDef *top_usb_rx;
+#ifdef USB_USE_BUS
+static Bus_SubscriberTypeDef *usb_tx_subscriber;  // USB TX 总线订阅者
+static Bus_TopicHandleTypeDef *usb_rx_topic;      // USB RX 总线主题
 
-static StreamBufferHandle_t stream_usb_rx_output;  // 注册一个用于推送TinyBus的输出流
-static INTF_StreamListenerTypedef *listener_stream_usb_rx_output;
+static StreamBufferHandle_t usb_rx_output_buffer;  // USB RX 输出缓冲区
+static INTF_StreamListenerTypedef *usb_rx_output_listener;
 
-static void stream_usb_rx_output_ondata(INTF_StreamListenerTypedef *listener) {
+static void usb_rx_to_bus_handler(INTF_StreamListenerTypedef *listener) {
     (void)listener;
-    uint8_t buffer[BSP_USB_RX_STREAM_BUFFER_SIZE];
-    uint16_t len = xStreamBufferReceive(stream_usb_rx_output, buffer, BSP_USB_TX_STREAM_BUFFER_SIZE, 0);
+    uint8_t buffer[USB_RX_BUFFER_SIZE];
+    uint16_t length = xStreamBufferReceive(usb_rx_output_buffer, buffer, USB_TX_BUFFER_SIZE, 0);
     INTF_Serial_MessageTypeDef msg = {
-        .data = buffer,
-        .len = len};
-    Bus_Publish(top_usb_rx, &msg);
+        .payload = buffer,
+        .length = length};
+    Bus_Publish(usb_rx_topic, &msg);
 }
 
-static void BSP_USB_TX_CallBack(void *message, Bus_TopicHandleTypeDef *topic) {
+static void usb_tx_bus_callback(void *message, Bus_TopicHandleTypeDef *topic) {
     INTF_Serial_MessageTypeDef *msg = (INTF_Serial_MessageTypeDef *)message;
-    xStreamBufferSend(stream_usb_tx, msg->data, msg->len, portMAX_DELAY);
+    xStreamBufferSend(usb_tx_buffer, msg->payload, msg->length, portMAX_DELAY);
 }
 #endif
 
-// USB接收回调
-void usbd_cdc_rx_callback(uint8_t *data, uint32_t len) {
-    share_stream_usb_rx->write(share_stream_usb_rx, data, len);
+void usb_cdc_rx_handler(uint8_t *data, uint32_t length) {
+    usb_rx_sharer->write(usb_rx_sharer, data, length);
 }
 
-static void on_usb_tx(INTF_StreamListenerTypedef *listener) {
+static void usb_tx_data_handler(INTF_StreamListenerTypedef *listener) {
     (void)listener;
 
-    uint8_t buffer[BSP_USB_TX_STREAM_BUFFER_SIZE] = {0};
-    uint16_t len = xStreamBufferReceive(stream_usb_tx, buffer, BSP_USB_TX_STREAM_BUFFER_SIZE, 0);
+    uint8_t buffer[USB_TX_BUFFER_SIZE] = {0};
+    uint16_t length = xStreamBufferReceive(usb_tx_buffer, buffer, USB_TX_BUFFER_SIZE, 0);
     extern uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
-    CDC_Transmit_FS(buffer, len);
+    CDC_Transmit_FS(buffer, length);
 }
 
 void BSP_USB_Init() {
-    // stream_usb_tx = Bus_SharePtr(BSP_USB_TX_STREAM_NAME, sizeof(StreamBufferHandle_t));
-    // share_stream_usb_rx = Bus_SharePtr(BSP_USB_RX_SHARED_STREAM_NAME, sizeof(INTF_StreamSharerTypedef));
-    stream_usb_tx = xStreamBufferCreate(BSP_USB_TX_STREAM_BUFFER_SIZE, 1);
-    share_stream_usb_rx = StreamSharer_Register(BSP_USB_RX_STREAM_BUFFER_SIZE);
-    listener_usb_tx = StreamListener_Register(stream_usb_tx);
-    listener_usb_tx->on_data_received = on_usb_tx;
-    // Bus_SharePtr(BSP_USB_TX_STREAM_NAME, sizeof(struct StreamBufferDef_t));
-    Bus_SharePtrStatic(BSP_USB_TX_STREAM_NAME, stream_usb_tx);
-    Bus_SharePtrStatic(BSP_USB_RX_SHARED_STREAM_NAME, share_stream_usb_rx);
+    usb_tx_buffer = xStreamBufferCreate(USB_TX_BUFFER_SIZE, 1);
+    usb_rx_sharer = StreamSharer_Register(USB_RX_BUFFER_SIZE);
+    usb_tx_listener = StreamListener_Register(usb_tx_buffer);
+    usb_tx_listener->on_data_received = usb_tx_data_handler;
 
-#ifdef BSP_USB_USE_BUS
-    // 注册一个流用来截取usb_rx 用于TinyBus推送消息
-    stream_usb_rx_output = xStreamBufferCreate(BSP_USB_RX_STREAM_BUFFER_SIZE, 1);
-    share_stream_usb_rx->register_output(share_stream_usb_rx, stream_usb_rx_output);
+    Bus_SharePtrStatic(USB_TX_BUFFER_NAME, usb_tx_buffer);
+    Bus_SharePtrStatic(USB_RX_SHARER_NAME, usb_rx_sharer);
 
-    listener_stream_usb_rx_output = StreamListener_Register(stream_usb_rx_output);
-    listener_stream_usb_rx_output->on_data_received = stream_usb_rx_output_ondata;
+#ifdef USB_USE_BUS
+    usb_rx_output_buffer = xStreamBufferCreate(USB_RX_BUFFER_SIZE, 1);
+    usb_rx_sharer->register_output(usb_rx_sharer, usb_rx_output_buffer);
 
-    top_usb_rx = Bus_TopicRegister(BSP_USB_RX_TOPIC_NAME);
-    sub_usb_tx = Bus_SubscribeFromName(BSP_USB_TX_TOPIC_NAME, BSP_USB_TX_CallBack);
+    usb_rx_output_listener = StreamListener_Register(usb_rx_output_buffer);
+    usb_rx_output_listener->on_data_received = usb_rx_to_bus_handler;
+
+    usb_rx_topic = Bus_TopicRegister(USB_RX_TOPIC_NAME);
+    usb_tx_subscriber = Bus_SubscribeFromName(USB_TX_TOPIC_NAME, usb_tx_bus_callback);
 #endif
 }

@@ -53,6 +53,7 @@ static void StreamSharer_RemoveOutput_t(INTF_StreamSharerTypedef *self, StreamBu
         StreamBufferHandle_t sb = (StreamBufferHandle_t)listGET_LIST_ITEM_OWNER(item);
         if (sb == output_stream) {
             uxListRemove(item);
+            JUST_FREE(item);
         }
         break;
     }
@@ -128,6 +129,7 @@ void StreamListener_Destory_t(INTF_StreamListenerTypedef *self) {
         INTF_StreamListenerTypedef *listener = (INTF_StreamListenerTypedef *)listGET_LIST_ITEM_OWNER(item);
         if (listener == self) {
             uxListRemove(item);
+            JUST_FREE(item);
             break;
         }
 
@@ -204,22 +206,3 @@ int _write(int fd, char *pBuffer, int size) {
 
     return size;
 }
-
-// /* USER CODE BEGIN PFP */
-// #ifdef __GNUC__  // 串口重定向
-// #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-// #else
-// #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-// #endif
-// PUTCHAR_PROTOTYPE {
-//     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//     if (stream_to_print == NULL)
-//         return ch;
-
-//     if (xPortIsInsideInterrupt())
-//         xStreamBufferSendFromISR(stream_to_print, &ch, 1, &xHigherPriorityTaskWoken);
-//     else
-//         xStreamBufferSend(stream_to_print, &ch, 1, portMAX_DELAY);
-//     return ch;
-// }
-// /* USER CODE END PFP */
