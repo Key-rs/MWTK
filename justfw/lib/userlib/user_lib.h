@@ -71,28 +71,28 @@ extern uint8_t GlobalDebugMode;
 #define VAL_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 /**
- * @brief è¿”å›ä¸€å—å¹²å‡€çš„å†…ï¿½?,ä¸è¿‡ä»ç„¶éœ€è¦å¼ºåˆ¶è½¬ï¿½?ä¸ºä½ éœ€è¦çš„ç±»å‹
+ * @brief ·µ»ØÒ»¿é¸É¾»µÄÄÚ??,²»¹ıÈÔÈ»ĞèÒªÇ¿ÖÆ×ª??ÎªÄãĞèÒªµÄÀàĞÍ
  *
- * @param size åˆ†é…å¤§å°
+ * @param size ·ÖÅä´óĞ¡
  * @return void*
  */
 void *zero_malloc(size_t size);
 
-// ï¿½ï¿½ï¿½Ù¿ï¿½ï¿½ï¿½
+// ¿ìËÙ¿ª·½
 float Sqrt(float x);
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// ¾ø¶ÔÖµÏŞÖÆ
 float abs_limit(float num, float Limit);
-// ï¿½Ğ¶Ï·ï¿½ï¿½ï¿½Î»
+// ÅĞ¶Ï·ûºÅÎ»
 float sign(float value);
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// ¸¡µãËÀÇø
 float float_deadband(float Value, float minValue, float maxValue);
-// ï¿½Ş·ï¿½ï¿½ï¿½ï¿½ï¿½
+// ÏŞ·ùº¯Êı
 float float_constrain(float Value, float minValue, float maxValue);
-// ï¿½Ş·ï¿½ï¿½ï¿½ï¿½ï¿½
+// ÏŞ·ùº¯Êı
 int16_t int16_constrain(int16_t Value, int16_t minValue, int16_t maxValue);
-// Ñ­ï¿½ï¿½ï¿½Ş·ï¿½ï¿½ï¿½ï¿½ï¿½
+// Ñ­»·ÏŞ·ùº¯Êı
 float loop_float_constrain(float Input, float minValue, float maxValue);
-// ï¿½Ç¶ï¿½ ï¿½ï¿½ï¿½Ş·ï¿½ 180 ~ -180
+// ½Ç¶È¸ñÊ½»¯Îª-180~180
 float theta_format(float Ang);
 
 int float_rounding(float raw);
@@ -119,7 +119,7 @@ void USB_Printf(const char *fmt, ...);
 
 uint32_t getDtick(uint32_t *last_tick);
 
-// ï¿½ï¿½ï¿½È¸ï¿½Ê½ï¿½ï¿½Îª-PI~PI
+// ½Ç¶È¸ñÊ½»¯Îª-¦° ~ ¦°
 #define rad_format(Ang) loop_float_constrain((Ang), -PI, PI)
 
 #endif  // JUSTFW_USER_LIB_H

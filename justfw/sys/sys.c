@@ -16,6 +16,7 @@ void Sys_Init() {
     Stream_Init();
     /*BSP*/
     BSP_USB_Init();
+    BSP_CAN_Init();
     DWT_Init(168);
     delay_init();
 

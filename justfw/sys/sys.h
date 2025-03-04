@@ -1,6 +1,7 @@
 #ifndef __SYS_H
 #define __SYS_H
 
+#include "BSP_CAN.h"
 #include "BSP_UART.h"
 #include "BSP_USB.h"
 #include "BSP_W25Qx.h"
