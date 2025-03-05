@@ -15,6 +15,7 @@ void Sys_Init() {
     Bus_Init();
     Stream_Init();
     /*BSP*/
+    BSP_UART_Init();
     BSP_USB_Init();
     BSP_CAN_Init();
     DWT_Init(168);

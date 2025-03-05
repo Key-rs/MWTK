@@ -121,6 +121,7 @@ static void BSP_CAN_Loop() {
     INTF_CAN_MessageTypeDef msg;
     while (1) {
         while (!fifo_is_empty(g_can1_tx_fifo)) {
+            fifo_get(g_can1_tx_fifo, &msg);
             if (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0) {
                 fifo_put(g_can1_tx_fifo, &msg);
                 break;
@@ -128,6 +129,7 @@ static void BSP_CAN_Loop() {
             BSP_CAN_Transmit(msg.data, msg.id_type, msg.rtr_type, msg.can_id, &hcan1);
         }
         while (!fifo_is_empty(g_can2_tx_fifo)) {
+            fifo_get(g_can2_tx_fifo, &msg);
             if (HAL_CAN_GetTxMailboxesFreeLevel(&hcan2) == 0) {
                 fifo_put(g_can1_tx_fifo, &msg);
                 break;

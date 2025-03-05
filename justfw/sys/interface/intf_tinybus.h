@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "intf_sys.h"
+// #include "intf_sys.h"
 
 typedef struct Bus_TopicHandle Bus_TopicHandleTypeDef;
 typedef struct Bus_Subscriber Bus_SubscriberTypeDef;

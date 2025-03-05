@@ -45,8 +45,12 @@ typedef struct SteadyWin_MIT_ResData {
     bool recived;
     STEADYWIN_MIT_ERR err;
     STEADYWIN_MIT_COMMAND last_command;
+    float gear_rate;  // 减速比
+    float torque_constant;
 } SteadyWin_MIT_ResDataTypedef;
 
-void SteadyWin_Init();
+void SteadyWinMIT_Init();
+
+INTF_Motor_HandleTypeDef *GIM3505_8_Register(SteadyWin_MIT_ConfigTyepdef *config);
 
 #endif

@@ -188,7 +188,7 @@ void Stream_Init() {
     xTaskCreate(
         Stream_ManagerLoop,
         "StreamManager",
-        256,
+        512,
         NULL,
         1,
         NULL);
