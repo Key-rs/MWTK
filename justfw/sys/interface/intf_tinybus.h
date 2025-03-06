@@ -97,4 +97,6 @@ void *Bus_SharePtr(char *ptrName, size_t len);
 
 void Bus_SharePtrStatic(char *ptrName, void *static_data);
 
+void *Bus_SearchPtr(char *ptrName);
+
 #endif

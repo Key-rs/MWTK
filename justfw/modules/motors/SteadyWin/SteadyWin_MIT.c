@@ -253,6 +253,7 @@ static void _motor_handle_init(INTF_Motor_HandleTypeDef* self, SteadyWin_MIT_Con
     self->set_torque = motor_set_torque;
     self->enable = motor_enable;
     self->disable = motor_disable;
+    self->reset = motor_set_zero;  // 将当前位置设置为零点
 
     SteadyWin_MIT_ResDataTypedef* prid = JUST_MALLOC(sizeof(SteadyWin_MIT_ResDataTypedef));
     memset(prid, 0, sizeof(SteadyWin_MIT_ResDataTypedef));

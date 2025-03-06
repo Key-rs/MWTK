@@ -4,7 +4,7 @@
 #define USB_TX_BUFFER_SIZE 1024
 #define USB_RX_BUFFER_SIZE 128  // 因为USB存在分包限制, 所以这里只给两倍单位包数量
 
-#define USB_RX_SHARER_NAME "/stream/usb_rx"
+#define USB_RX_SHARER_NAME "/share/usb_rx"
 #define USB_TX_BUFFER_NAME "/stream/usb_tx"
 
 // 是否开启USB TINYBUS

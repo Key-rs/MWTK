@@ -21,5 +21,7 @@
 
 #define configCOMMAND_INT_MAX_OUTPUT_SIZE 1024
 
-#define CLI_INPUT_STREAM_NAME USB_RX_SHARER_NAME
+#define CLI_INPUT_SHARE_NAME USB_RX_SHARER_NAME  // CLI 共享输入流, 使用共享流可以在CLI获得输入流的同时上层应用实现数据监听
 #define CLI_OUTPUT_STREAM_NAME USB_TX_BUFFER_NAME
+
+#define CLI_INPUT_STREAM "/stream/cli_input"  // 直接获得CLI 输入流，读取这个流CLI本身将无法获得输入流

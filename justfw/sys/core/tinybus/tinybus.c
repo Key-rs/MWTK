@@ -170,6 +170,16 @@ void Bus_SharePtrStatic(char *ptrName, void *static_data) {
     // return bus_ptr->ptr;
 }
 
+void *Bus_SearchPtr(char *ptrName) {
+    Bus_PtrTypeDef *it;
+    for (it = g_ptr_root; it != NULL; it = it->_next_ptr) {
+        if (strcmp(it->name, ptrName) == 0)
+            return it->ptr;
+    }
+
+    return NULL;
+}
+
 /**
  * @brief 发布共享指针
  * @note 不考虑重命名错误

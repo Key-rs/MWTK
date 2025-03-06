@@ -3,6 +3,7 @@
 
 #include "DR16.h"
 #include "SteadyWin_MIT.h"
+#include "motor_cli.h"
 
 void Modules_Init();
 
