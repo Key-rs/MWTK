@@ -6,7 +6,7 @@
 
 typedef struct SharedPtrDef {
     char *name;
-    void *data
+    void *data;
 } SharedPtr_t;
 typedef SharedPtr_t *SharedPtrHandle_t;
 
@@ -34,7 +34,7 @@ void *pvSreachSharedPtr(char *pcName) {
 
 void *pvSharePtr(const char *pcName, size_t xSize) {
     void *pvData;
-    pvData = pvSreachSharedPtr(pcName);
+    pvData = pvSreachSharedPtr((char *)pcName);
     if (pvData != NULL)
         return pvData;
 
@@ -67,7 +67,7 @@ void vSharePtrStatic(const char *pcName, void *pvData) {
 
     pItem = (ListItem_t *)JUST_MALLOC(sizeof(ListItem_t));
     xSharedPtr = JUST_MALLOC(sizeof(SharedPtr_t));
-    xSharedPtr->name = pcName;
+    xSharedPtr->name = (char *)pcName;
     xSharedPtr->data = pvData;
 
     listSET_LIST_ITEM_OWNER(pItem, xSharedPtr);

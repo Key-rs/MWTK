@@ -23,7 +23,7 @@ static char cInputString[cmdMAX_INPUT_SIZE];
 
 static StreamBufferHandle_t stream_cli_input;
 
-static void on_start(void *message, BusTopicHandle_t topic) {
+void cli_on_start() {
     // USB_Printf("Hello!\nJUSTOS v0.1\n>");
     // 这里展示欢迎信息
     printf(BLUE "\n");
@@ -119,5 +119,5 @@ void CLI_Init() {
 
     xTaskCreate(CLI_MainLoop, "CLI_Task", 512, NULL, 255, NULL);
 
-    xBusSubscribeFromName("USB_ON", on_start);
+    // xBusSubscribeFromName("USB_ON", on_start);
 }

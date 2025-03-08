@@ -60,7 +60,9 @@ StreamHandle_t xStreamCreate(size_t xStreamSize) {
 
 size_t xStreamWrite(StreamHandle_t xStream, uint8_t *pData, size_t xBufferLenBytes, TickType_t xTickToWait) {
     if (xPortIsInsideInterrupt()) {
-        return xStreamBufferSendFromISR((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, xTickToWait);
+        BaseType_t ok;
+
+        return xStreamBufferSendFromISR((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, &ok);
     } else {
         return xStreamBufferSend((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, xTickToWait);
     }
@@ -68,7 +70,8 @@ size_t xStreamWrite(StreamHandle_t xStream, uint8_t *pData, size_t xBufferLenByt
 
 size_t xStreamRead(StreamHandle_t xStream, uint8_t *pData, size_t xBufferLenBytes, TickType_t xTickToWait) {
     if (xPortIsInsideInterrupt()) {
-        return xStreamBufferReceiveFromISR((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, xTickToWait);
+        BaseType_t ok;
+        return xStreamBufferReceiveFromISR((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, &ok);
     } else {
         return xStreamBufferReceive((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, xTickToWait);
     }
@@ -84,7 +87,7 @@ StreamListenerHandle_t xStreamListenerCreate(StreamHandle_t xStream) {
 
     ListItem_t *item = JUST_MALLOC(sizeof(ListItem_t));
     listSET_LIST_ITEM_OWNER(item, listener);
-    vListInsertEnd(&xStreamListenerCreate, item);
+    vListInsertEnd(&xStreamListenerList, item);
 
     return listener;
 }
@@ -103,7 +106,7 @@ static void pvSharedStreamOnData_t(StreamListenerHandle_t xStreamListener) {
 }
 
 SharedStreamHandle_t xSharedStreamCreate(uint16_t xBufferSize) {
-    SharedStreamHandle_t xSharedStream;
+    SharedStreamHandle_t xSharedStream = JUST_MALLOC(sizeof(SharedStream_t));
     xSharedStream->xInputStream = xStreamCreate(xBufferSize);
     vListInitialise(&xSharedStream->xOutputStreamList);
     xSharedStream->xStreamListener = xStreamListenerCreate(xSharedStream->xInputStream);
@@ -121,4 +124,6 @@ StreamHandle_t xSharedStreamOutputCreate(SharedStreamHandle_t xSharedStream, siz
     ListItem_t *pItem = JUST_MALLOC(sizeof(ListItem_t));
     listSET_LIST_ITEM_OWNER(pItem, xOutputStream);
     vListInsertEnd(&xSharedStream->xOutputStreamList, pItem);
+
+    return xOutputStream;
 }
