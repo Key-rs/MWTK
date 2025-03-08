@@ -8,6 +8,7 @@
 #include "intf_can.h"
 
 /* 内置数据共享 */
+#include "shared_ptr_intf.h"
 #include "stream_intf.h"
 #include "tinybus_intf.h"
 

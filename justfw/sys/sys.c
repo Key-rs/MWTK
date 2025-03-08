@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 
-#include "BSP_USB_cfg.h"
 #include "intf_sys.h"
 #include "justfw_cfg.h"
 #include "main.h"
@@ -13,6 +12,7 @@ void Sys_Init() {
     __disable_irq();
 
     Bus_Init();
+    vSharedPtrInit();
     Stream_Init();
     /*BSP*/
     BSP_UART_Init();
