@@ -10,7 +10,7 @@
  */
 typedef struct BusTopicDef {
     const char *pcName;      // 话题名称
-    List_t subscriber_list;  // 订阅者列表
+    List_t xSubscriberList;  // 订阅者列表
 } BusTopicDef_t;
 typedef BusTopicDef_t *BusTopicHandle_t;
 

@@ -1,8 +1,8 @@
 #ifndef __STEAM_H
 #define __STEAM_H
 
-#include "interface.h"
 #include "list.h"
+#include "stream_intf.h"
 /*
 TinyBus 的局限性：
 
@@ -20,12 +20,6 @@ STREAM 流的优势：
 
 多线程友好：流的设计可以更好地支持多线程环境。
 */
-
-typedef struct Stream_SharerPrivateData {
-    INTF_StreamListenerTypedef *listener;
-    StreamBufferHandle_t input_stream;
-    List_t output_stream_list;
-} Stream_SharerPrivateDataTypedef;
 
 void Stream_Init();
 

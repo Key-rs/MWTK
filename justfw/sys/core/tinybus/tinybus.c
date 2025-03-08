@@ -31,7 +31,7 @@ BusTopicHandle_t xBusTopicRegister(const char *pcTopicName) {
 
     topic = (BusTopicHandle_t)JUST_MALLOC(sizeof(BusTopicDef_t));
     topic->pcName = pcTopicName;
-    vListInitialise(&topic->subscriber_list);
+    vListInitialise(&topic->xSubscriberList);
 
     ListItem_t *item = (ListItem_t *)JUST_MALLOC(sizeof(ListItem_t));
     listSET_LIST_ITEM_OWNER(item, topic);
@@ -47,7 +47,7 @@ BusSubscriberHandle_t xBusSubscribe(BusTopicHandle_t xTopic, void (*pvCallback)(
     subscriber->xEnable = pdTRUE;  // 默认开启
     ListItem_t *item = (ListItem_t *)JUST_MALLOC(sizeof(ListItem_t));
     listSET_LIST_ITEM_OWNER(item, subscriber);
-    vListInsertEnd(&(xTopic->subscriber_list), item);
+    vListInsertEnd(&(xTopic->xSubscriberList), item);
 
     return subscriber;
 }
@@ -61,9 +61,9 @@ BusSubscriberHandle_t xBusSubscribeFromName(char *cTopicName, void (*pvCallback)
 }
 
 void vBusPublish(BusTopicHandle_t pxTopic, void *pvMessage) {
-    ListItem_t *item = listGET_HEAD_ENTRY(&pxTopic->subscriber_list);
+    ListItem_t *item = listGET_HEAD_ENTRY(&pxTopic->xSubscriberList);
 
-    while (item != listGET_END_MARKER(&pxTopic->subscriber_list)) {
+    while (item != listGET_END_MARKER(&pxTopic->xSubscriberList)) {
         BusSubscriberHandle_t subscriber = listGET_LIST_ITEM_OWNER(item);
         subscriber->pvCallback(pvMessage, pxTopic);
 
