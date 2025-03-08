@@ -6,11 +6,11 @@
 
 extern CAN_HandleTypeDef hcan1, hcan2;
 
-Bus_SubscriberTypeDef *g_bsp_can1_tx,
-    *g_bsp_can2_tx;
+BusSubscriberHandle_t g_bsp_can1_tx,
+    g_bsp_can2_tx;
 
-Bus_TopicHandleTypeDef *g_bsp_can1_rx,
-    *g_bsp_can2_rx;
+BusTopicHandle_t g_bsp_can1_rx,
+    g_bsp_can2_rx;
 
 fifo_t *g_can1_tx_fifo,
     *g_can1_rx_fifo,
@@ -106,11 +106,11 @@ void BSP_CAN_Transmit(uint8_t *data, INTF_CAN_ID_Type idType, INTF_CAN_RTR_Type 
  * @param *topic:来源话题
  * @note 该函数会将消息储存在fifo中
  */
-void BSP_CAN_TX_CallBack(void *message, Bus_TopicHandleTypeDef *topic) {
+void BSP_CAN_TX_CallBack(void *message, BusTopicHandle_t topic) {
     INTF_CAN_MessageTypeDef *msg = (INTF_CAN_MessageTypeDef *)message;
-    if (topic == g_bsp_can1_tx->topic) {
+    if (topic == g_bsp_can1_tx->pxTopic) {
         fifo_put(g_can1_tx_fifo, msg);
-    } else if (topic == g_bsp_can2_tx->topic) {
+    } else if (topic == g_bsp_can2_tx->pxTopic) {
         fifo_put(g_can2_tx_fifo, msg);
     } else {
         return;
@@ -138,11 +138,11 @@ static void BSP_CAN_Loop() {
         }
         while (!fifo_is_empty(g_can1_rx_fifo)) {
             fifo_get(g_can1_rx_fifo, &msg);
-            Bus_Publish(g_bsp_can1_rx, &msg);
+            vBusPublish(g_bsp_can1_rx, &msg);
         }
         while (!fifo_is_empty(g_can2_rx_fifo)) {
             fifo_get(g_can2_rx_fifo, &msg);
-            Bus_Publish(g_bsp_can2_rx, &msg);
+            vBusPublish(g_bsp_can2_rx, &msg);
         }
 
         vTaskDelay(pdMS_TO_TICKS(1));
@@ -174,12 +174,12 @@ void BSP_CAN_Init() {
     HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO0_MSG_PENDING);
 
     // 注册话题
-    g_bsp_can1_rx = Bus_TopicRegister("/CAN1/RX");
-    g_bsp_can2_rx = Bus_TopicRegister("/CAN2/RX");
+    g_bsp_can1_rx = xBusTopicRegister("/CAN1/RX");
+    g_bsp_can2_rx = xBusTopicRegister("/CAN2/RX");
 
     // 订阅话题
-    g_bsp_can1_tx = Bus_SubscribeFromName("/CAN1/TX", BSP_CAN_TX_CallBack);
-    g_bsp_can2_tx = Bus_SubscribeFromName("/CAN2/TX", BSP_CAN_TX_CallBack);
+    g_bsp_can1_tx = xBusSubscribeFromName("/CAN1/TX", BSP_CAN_TX_CallBack);
+    g_bsp_can2_tx = xBusSubscribeFromName("/CAN2/TX", BSP_CAN_TX_CallBack);
 
     // FIFO初始化
     g_can1_tx_fifo = fifo_create(sizeof(INTF_CAN_MessageTypeDef), BSP_CAN_TX_FIFO_SIZE);

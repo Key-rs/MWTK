@@ -8,6 +8,7 @@
 #include "CLI.h"
 #include "bsp_delay.h"
 #include "bsp_dwt.h"
+#include "shared_ptr.h"
 #include "storage.h"
 #include "stream.h"
 #include "tinybus.h"

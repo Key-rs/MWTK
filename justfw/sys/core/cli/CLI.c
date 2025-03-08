@@ -16,14 +16,14 @@
 */
 
 static SemaphoreHandle_t xCLIMutex;
-static Bus_SubscriberTypeDef *topic_rx;
+static BusSubscriberHandle_t topic_rx;
 
 static uint8_t ucInputIndex = 0;
 static char cInputString[cmdMAX_INPUT_SIZE];
 
 static StreamBufferHandle_t stream_cli_input;
 
-static void on_start(void *message, Bus_TopicHandleTypeDef *topic) {
+static void on_start(void *message, BusTopicHandle_t topic) {
     // USB_Printf("Hello!\nJUSTOS v0.1\n>");
     // 这里展示欢迎信息
     printf(BLUE "\n");
@@ -107,16 +107,17 @@ void CLI_Init() {
 
     xCLIMutex = xSemaphoreCreateMutex();
 
-    INTF_StreamSharerTypedef *stream_sharer;  // 命令行的共享输入流
-    stream_sharer = (INTF_StreamSharerTypedef *)Bus_SharePtr(CLI_INPUT_SHARE_NAME, sizeof(INTF_StreamSharerTypedef));
+    SharedStreamHandle_t stream_sharer;  // 命令行的共享输入流
+    stream_sharer = (SharedStreamHandle_t)pvSharePtr(CLI_INPUT_SHARE_NAME, sizeof(SharedStream_t));
 
-    stream_cli_input = xStreamBufferCreate(cmdMAX_INPUT_STREAM, 1);  // 命令行输入流
-    stream_sharer->register_output(stream_sharer, stream_cli_input);
+    // stream_cli_input = xStreamBufferCreate(cmdMAX_INPUT_STREAM, 1);  // 命令行输入流
+    // stream_sharer->register_output(stream_sharer, stream_cli_input);
+    stream_cli_input = xSharedStreamOutputCreate(stream_sharer, cmdMAX_INPUT_STREAM);
 
     // 对外共享命令行输入流，允许上层应用直接读取命令行输入流
-    Bus_SharePtrStatic(CLI_INPUT_STREAM, stream_cli_input);
+    vSharePtrStatic(CLI_INPUT_STREAM, stream_cli_input);
 
     xTaskCreate(CLI_MainLoop, "CLI_Task", 512, NULL, 255, NULL);
 
-    Bus_SubscribeFromName("USB_ON", on_start);
+    xBusSubscribeFromName("USB_ON", on_start);
 }

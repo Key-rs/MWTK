@@ -1,8 +1,7 @@
 #ifndef __STEAM_H
 #define __STEAM_H
 
-#include "list.h"
-#include "stream_intf.h"
+#include "intf_sys.h"
 /*
 TinyBus 的局限性：
 

@@ -2,9 +2,7 @@
 
 #include <string.h>
 
-#include "intf_sys.h"
 #include "list.h"
-#include "stddef.h"
 
 typedef struct SharedPtrDef {
     char *name;

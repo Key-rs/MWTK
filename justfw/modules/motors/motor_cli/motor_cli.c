@@ -47,7 +47,7 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
 
     // 第一个参数为 Motor Name
     INTF_Motor_HandleTypeDef* m;
-    m = Bus_SearchPtr(param[0]);
+    m = pvSreachSharedPtr(param[0]);
     if (m == NULL) {
         snprintf(pcWriteBuffer, xWriteBufferLen, RED "No Motor Found!\n\r" NC);
         return pdFALSE;

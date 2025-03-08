@@ -25,6 +25,6 @@ void app1_init() {
 
     // xTaskCreate(app1_mainloop, "App1", 256, NULL, 254, NULL);
 
-    rc_ctrl = Bus_SharePtr("DR16", sizeof(RC_ctrl_t));
+    rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
     m = GIM3505_8_Register(&config);
 }

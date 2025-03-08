@@ -1,39 +1,39 @@
 #include "BSP_USB_cfg.h"
 #include "intf_sys.h"
 
-static INTF_StreamSharerTypedef *usb_rx_sharer;      // USB RX 数据共享器
-static INTF_StreamListenerTypedef *usb_tx_listener;  // USB TX 数据监听器
-static StreamBufferHandle_t usb_tx_buffer;           // USB TX 数据缓冲区
-static StaticStreamBuffer_t usb_tx_buffer_struct;    // USB TX 静态缓冲区结构
+static SharedStreamHandle_t usb_rx_sharer;         // USB RX 数据共享器
+static StreamListenerHandle_t usb_tx_listener;     // USB TX 数据监听器
+static StreamBufferHandle_t usb_tx_buffer;         // USB TX 数据缓冲区
+static StaticStreamBuffer_t usb_tx_buffer_struct;  // USB TX 静态缓冲区结构
 
 #ifdef USB_USE_BUS
-static Bus_SubscriberTypeDef *usb_tx_subscriber;  // USB TX 总线订阅者
-static Bus_TopicHandleTypeDef *usb_rx_topic;      // USB RX 总线主题
+static BusTopicHandle_t *usb_tx_subscriber;  // USB TX 总线订阅者
+static BusTopicHandle_t *usb_rx_topic;       // USB RX 总线主题
 
 static StreamBufferHandle_t usb_rx_output_buffer;  // USB RX 输出缓冲区
-static INTF_StreamListenerTypedef *usb_rx_output_listener;
+static StreamListenerHandle_t usb_rx_output_listener;
 
-static void usb_rx_to_bus_handler(INTF_StreamListenerTypedef *listener) {
+static void usb_rx_to_bus_handler(StreamListenerHandle_t listener) {
     (void)listener;
     uint8_t buffer[USB_RX_BUFFER_SIZE];
     uint16_t length = xStreamBufferReceive(usb_rx_output_buffer, buffer, USB_TX_BUFFER_SIZE, 0);
     INTF_Serial_MessageTypeDef msg = {
-        .payload = buffer,
-        .length = length};
+        .data = buffer,
+        .len = length};
     Bus_Publish(usb_rx_topic, &msg);
 }
 
-static void usb_tx_bus_callback(void *message, Bus_TopicHandleTypeDef *topic) {
+static void usb_tx_bus_callback(void *message, BusTopicHandle_t topic) {
     INTF_Serial_MessageTypeDef *msg = (INTF_Serial_MessageTypeDef *)message;
-    xStreamBufferSend(usb_tx_buffer, msg->payload, msg->length, portMAX_DELAY);
+    xStreamWrite(usb_tx_buffer, msg->data, msg->len, portMAX_DELAY);
 }
 #endif
 
 void usb_cdc_rx_handler(uint8_t *data, uint32_t length) {
-    usb_rx_sharer->write(usb_rx_sharer, data, length);
+    xSharedStreamWrite(usb_rx_sharer, data, length, portMAX_DELAY);
 }
 
-static void usb_tx_data_handler(INTF_StreamListenerTypedef *listener) {
+static void usb_tx_data_handler(StreamListener_t *listener) {
     (void)listener;
 
     uint8_t buffer[USB_TX_BUFFER_SIZE] = {0};
@@ -43,22 +43,23 @@ static void usb_tx_data_handler(INTF_StreamListenerTypedef *listener) {
 }
 
 void BSP_USB_Init() {
-    usb_tx_buffer = xStreamBufferCreate(USB_TX_BUFFER_SIZE, 1);
-    usb_rx_sharer = StreamSharer_Register(USB_RX_BUFFER_SIZE);
-    usb_tx_listener = StreamListener_Register(usb_tx_buffer);
-    usb_tx_listener->on_data_received = usb_tx_data_handler;
+    usb_tx_buffer = xStreamCreate(USB_TX_BUFFER_SIZE);
+    usb_rx_sharer = xSharedStreamCreate(USB_RX_BUFFER_SIZE);
+    usb_tx_listener = xStreamListenerCreate(usb_tx_buffer);
+    usb_tx_listener->pvOnDataReceived = usb_tx_data_handler;
 
-    Bus_SharePtrStatic(USB_TX_BUFFER_NAME, usb_tx_buffer);
-    Bus_SharePtrStatic(USB_RX_SHARER_NAME, usb_rx_sharer);
+    vSharePtrStatic(USB_TX_BUFFER_NAME, usb_tx_buffer);
+    vSharePtrStatic(USB_RX_SHARER_NAME, usb_rx_sharer);
 
 #ifdef USB_USE_BUS
-    usb_rx_output_buffer = xStreamBufferCreate(USB_RX_BUFFER_SIZE, 1);
-    usb_rx_sharer->register_output(usb_rx_sharer, usb_rx_output_buffer);
+    // usb_rx_output_buffer = xStreamBufferCreate(USB_RX_BUFFER_SIZE, 1);
+    // usb_rx_sharer->register_output(usb_rx_sharer, usb_rx_output_buffer);
+    usb_rx_output_buffer = xSharedStreamOutputCreate(usb_rx_sharer, USB_RX_BUFFER_SIZE);
 
-    usb_rx_output_listener = StreamListener_Register(usb_rx_output_buffer);
-    usb_rx_output_listener->on_data_received = usb_rx_to_bus_handler;
+    usb_rx_output_listener = xStreamListenerCreate(usb_rx_output_buffer);
+    usb_rx_output_listener->pvOnDataReceived = usb_rx_to_bus_handler;
 
-    usb_rx_topic = Bus_TopicRegister(USB_RX_TOPIC_NAME);
-    usb_tx_subscriber = Bus_SubscribeFromName(USB_TX_TOPIC_NAME, usb_tx_bus_callback);
+    usb_rx_topic = xBusTopicRegister(BSP_USB_RX_TOPIC_NAME);
+    usb_tx_subscriber = xBusSubscribeFromName(BSP_USB_TX_TOPIC_NAME, usb_tx_bus_callback);
 #endif
 }

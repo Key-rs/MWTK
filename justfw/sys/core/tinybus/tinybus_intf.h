@@ -2,7 +2,7 @@
 #define __TINYBUS_INTF_H
 
 #include "FreeRTOS.h"
-
+#include "list.h"
 /* 数据类型定义 */
 
 /**
@@ -18,9 +18,9 @@ typedef BusTopicDef_t *BusTopicHandle_t;
  * @brief 订阅者结构体
  */
 typedef struct BusSubscriberDef {
-    void (*pvCallback)(void *, BusTopicHandle_t *);  // 回调函数
-    BaseType_t xEnable;                              // 订阅使能标志
-    BusTopicHandle_t *pxTopic;                       // 所属话题
+    void (*pvCallback)(void *, BusTopicHandle_t);  // 回调函数
+    BaseType_t xEnable;                            // 订阅使能标志
+    BusTopicHandle_t pxTopic;                      // 所属话题
 } BusSubscriberDef_t;
 typedef BusSubscriberDef_t *BusSubscriberHandle_t;
 

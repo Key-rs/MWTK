@@ -1,7 +1,6 @@
 #ifndef __SHARED_PTR_INTF_H
 #define __SHARED_PTR_INTF_H
-
-#include <stddef.h>
+#include "FreeRTOS.h"
 
 void *pvSreachSharedPtr(char *pcName);
 void *pvSharePtr(const char *pcName, size_t xSize);

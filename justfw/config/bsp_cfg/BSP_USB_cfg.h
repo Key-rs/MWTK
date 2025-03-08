@@ -8,7 +8,7 @@
 #define USB_TX_BUFFER_NAME "/stream/usb_tx"
 
 // 是否开启USB TINYBUS
-// #define BSP_USB_USE_BUS
+// #define USB_USE_BUS
 
 //@item:USB接收话题名称
 //@type:string

@@ -1,8 +1,5 @@
 #include "stream.h"
 
-#include "intf_sys.h"
-#include "list.h"
-#include "stream_buffer.h"
 #include "stream_cfg.h"
 
 static List_t xStreamListenerList;
@@ -28,7 +25,7 @@ static void Stream_ManagerLoop() {
 #include "justfw_cfg.h"
 
     ListItem_t *pItem;
-    xPrintStream = pvSreachSharedPtr();
+    xPrintStream = (StreamHandle_t)pvSreachSharedPtr(PRINT_OUTPUT_STREAM_NAME);
     while (1) {
         pItem = listGET_HEAD_ENTRY(&xStreamListenerList);
 
@@ -49,7 +46,8 @@ static void Stream_ManagerLoop() {
 
 int _write(int fd, char *pBuffer, int size) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xStreamWrite(xPrintStream, pBuffer, size, portMAX_DELAY);
+    if (xPrintStream != NULL)
+        xStreamWrite(xPrintStream, pBuffer, size, portMAX_DELAY);
 
     return size;
 }
@@ -64,7 +62,7 @@ size_t xStreamWrite(StreamHandle_t xStream, uint8_t *pData, size_t xBufferLenByt
     if (xPortIsInsideInterrupt()) {
         return xStreamBufferSendFromISR((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, xTickToWait);
     } else {
-        return returnxStreamBufferSend((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, xTickToWait);
+        return xStreamBufferSend((StreamBufferHandle_t)xStream, pData, xBufferLenBytes, xTickToWait);
     }
 }
 
@@ -118,9 +116,9 @@ size_t xSharedStreamWrite(SharedStreamHandle_t xSharedStream, uint8_t *pData, si
     return xStreamWrite(xSharedStream->xInputStream, pData, xBufferLenBytes, xTickToWait);
 }
 
-StreamHandle_t xSharedStreamOutputCreate(SharedStream_t xSharedStream, size_t xStreamSize) {
+StreamHandle_t xSharedStreamOutputCreate(SharedStreamHandle_t xSharedStream, size_t xStreamSize) {
     StreamHandle_t xOutputStream = xStreamCreate(xStreamSize);
     ListItem_t *pItem = JUST_MALLOC(sizeof(ListItem_t));
     listSET_LIST_ITEM_OWNER(pItem, xOutputStream);
-    vListInsertEnd(&xSharedStream.xOutputStreamList, pItem);
+    vListInsertEnd(&xSharedStream->xOutputStreamList, pItem);
 }

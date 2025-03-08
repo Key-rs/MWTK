@@ -31,12 +31,12 @@ typedef struct UART_Instance {
     uint8_t recv_buff[UART_RXBUFF_LIMIT];  // 预先定义的最大buff大小,如果太小请修改UART_RXBUFF_LIMIT
     uint8_t recv_buff_size;                // 模块接收一包数据的大小
     UART_HandleTypeDef *uart_handle;       // 实例对应的uart_handle
-    Bus_SubscriberTypeDef *tx_topic;
-    Bus_TopicHandleTypeDef *rx_topic;
-    INTF_StreamSharerTypedef *rx_buffer;
-    StreamBufferHandle_t tx_buffer;
-    INTF_StreamListenerTypedef *rx_listener;  // 用于消息推流
-    INTF_StreamListenerTypedef *tx_listener;  // 用于消息发送
+    BusSubscriberHandle_t tx_topic;
+    BusTopicHandle_t rx_topic;
+    SharedStreamHandle_t rx_buffer;
+    StreamHandle_t tx_buffer;
+    StreamListenerHandle_t rx_listener;  // 用于消息推流
+    StreamListenerHandle_t tx_listener;  // 用于消息发送
 } UART_InstanceTypeDef;
 
 void BSP_UART_Init();

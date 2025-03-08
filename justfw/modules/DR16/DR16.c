@@ -8,11 +8,11 @@ static RC_ctrl_t *rc_ctrl;
 
 // DaemonInstance *g_rc_daemon_instance;
 
-static Bus_SubscriberTypeDef *g_dr16_rx;
+static BusSubscriberHandle_t g_dr16_rx;
 
-static Bus_TopicHandleTypeDef *g_dr16_signal_disconnected,  // 遥控器失联
-    *g_dr16_signal_connected,                               // 遥控器连接
-    *g_dr16_signal_updated;                                 // 遥控器数据更新
+static BusTopicHandle_t g_dr16_signal_disconnected,  // 遥控器失联
+    g_dr16_signal_connected,                         // 遥控器连接
+    g_dr16_signal_updated;                           // 遥控器数据更新
 
 uint8_t g_dr16_is_connected = 0;
 uint32_t g_last_solve_tick = 0;
@@ -39,7 +39,7 @@ static void DR16_solve(const uint8_t *sbus_buf) {
     // 遥控器连接signal
     if (!g_dr16_is_connected) {
         g_dr16_is_connected = 1;
-        Bus_Publish(g_dr16_signal_connected, NULL);
+        vBusPublish(g_dr16_signal_connected, NULL);
     }
 
     // 记录更新时间
@@ -67,12 +67,12 @@ static void DR16_solve(const uint8_t *sbus_buf) {
     *(uint16_t *)&rc_ctrl[TEMP].keyboard = (uint16_t)(sbus_buf[14] | (sbus_buf[15] << 8));
 
     // 发布遥控器数据更新signal
-    Bus_Publish(g_dr16_signal_updated, NULL);
+    vBusPublish(g_dr16_signal_updated, NULL);
 
     // DaemonReload(g_rc_daemon_instance);  // 重载守护进程(检查遥控器是否正常工作
 }
 
-void DR16_RX_CallBack(void *message, Bus_TopicHandleTypeDef *topic) {
+void DR16_RX_CallBack(void *message, BusTopicHandle_t topic) {
     INTF_Serial_MessageTypeDef *msg = (INTF_Serial_MessageTypeDef *)message;
     if (msg->len != 18) {
         return;  // 长度不对，丢包
@@ -84,12 +84,12 @@ void DR16_RX_CallBack(void *message, Bus_TopicHandleTypeDef *topic) {
 void RCLostCallback(void *id) {
     if (g_dr16_is_connected) {
         g_dr16_is_connected = 0;
-        Bus_Publish(g_dr16_signal_disconnected, NULL);
+        vBusPublish(g_dr16_signal_disconnected, NULL);
     }
 }
 
 void DR16_Init() {
-    rc_ctrl = Bus_SharePtr("DR16", sizeof(RC_ctrl_t));
+    rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
 
     // // 进行守护进程的注册,用于定时检查遥控器是否正常工作
     // Daemon_Init_Config_s daemon_conf = {
@@ -100,10 +100,10 @@ void DR16_Init() {
     // g_rc_daemon_instance = DaemonRegister(&daemon_conf);
 
     // g_dr16_rx = Bus_SubscribeFromName("/DBUS/RX",DR16_RX_CallBack);  // 串口遥控器
-    g_dr16_rx = Bus_SubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
+    g_dr16_rx = xBusSubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
 
     // 遥控器事件
-    g_dr16_signal_disconnected = Bus_TopicRegister("/signal/DR16/disconnected");
-    g_dr16_signal_connected = Bus_TopicRegister("/signal/DR16/connected");
-    g_dr16_signal_updated = Bus_TopicRegister("/signal/DR16/updated");
+    g_dr16_signal_disconnected = xBusTopicRegister("/signal/DR16/disconnected");
+    g_dr16_signal_connected = xBusTopicRegister("/signal/DR16/connected");
+    g_dr16_signal_updated = xBusTopicRegister("/signal/DR16/updated");
 }

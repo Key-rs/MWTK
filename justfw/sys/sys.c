@@ -11,7 +11,7 @@ static StreamBufferHandle_t stream;
 void Sys_Init() {
     __disable_irq();
 
-    Bus_Init();
+    xBusInit();
     vSharedPtrInit();
     Stream_Init();
     /*BSP*/

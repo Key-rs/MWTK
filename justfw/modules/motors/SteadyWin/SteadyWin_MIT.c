@@ -21,7 +21,7 @@ static void motor_get_err(INTF_Motor_HandleTypeDef* self) {
     msg.data[6] = 0x00;
     msg.data[7] = 0xFB;
 
-    Bus_Publish(priv->can_tx_topic, &msg);
+    vBusPublish(priv->can_tx_topic, &msg);
 }
 
 static void motor_clear_err(INTF_Motor_HandleTypeDef* self) {
@@ -33,7 +33,7 @@ static void motor_clear_err(INTF_Motor_HandleTypeDef* self) {
     // msg.data[6] = 0xFF;
     msg.data[7] = 0xFB;
 
-    Bus_Publish(priv->can_tx_topic, &msg);
+    vBusPublish(priv->can_tx_topic, &msg);
 }
 
 static void motor_enable(INTF_Motor_HandleTypeDef* self) {
@@ -44,7 +44,7 @@ static void motor_enable(INTF_Motor_HandleTypeDef* self) {
 
     msg.data[7] = 0xFC;
 
-    Bus_Publish(priv->can_tx_topic, &msg);
+    vBusPublish(priv->can_tx_topic, &msg);
 }
 
 static void motor_disable(INTF_Motor_HandleTypeDef* self) {
@@ -55,7 +55,7 @@ static void motor_disable(INTF_Motor_HandleTypeDef* self) {
 
     msg.data[7] = 0xFD;
 
-    Bus_Publish(priv->can_tx_topic, &msg);
+    vBusPublish(priv->can_tx_topic, &msg);
 }
 
 static void motor_set_zero(INTF_Motor_HandleTypeDef* self) {
@@ -66,7 +66,7 @@ static void motor_set_zero(INTF_Motor_HandleTypeDef* self) {
 
     msg.data[7] = 0xFE;
 
-    Bus_Publish(priv->can_tx_topic, &msg);
+    vBusPublish(priv->can_tx_topic, &msg);
 }
 
 static void motor_send_mit(INTF_Motor_HandleTypeDef* self) {
@@ -92,7 +92,7 @@ static void motor_send_mit(INTF_Motor_HandleTypeDef* self) {
     msg.data[6] = ((kd << 4) & 0x0F) | ((torque >> 8) & 0xF0);
     msg.data[7] = torque & 0xFF;
 
-    Bus_Publish(priv->can_tx_topic, &msg);
+    vBusPublish(priv->can_tx_topic, &msg);
 }
 
 static void motor_set_angle(INTF_Motor_HandleTypeDef* self, float angle) {
@@ -107,7 +107,7 @@ static void motor_set_torque(INTF_Motor_HandleTypeDef* self, float torque) {
     self->target_torque = torque;
 }
 
-static void motor_can_cb(void* message, Bus_TopicHandleTypeDef* topic) {
+static void motor_can_cb(void* message, BusTopicHandle_t topic) {
     INTF_CAN_MessageTypeDef* msg = (INTF_CAN_MessageTypeDef*)message;
 
     if (msg->id_type == BSP_CAN_ID_EXT || msg->can_id != STEADY_MASTER_ID) {
@@ -258,8 +258,8 @@ static void _motor_handle_init(INTF_Motor_HandleTypeDef* self, SteadyWin_MIT_Con
     SteadyWin_MIT_ResDataTypedef* prid = JUST_MALLOC(sizeof(SteadyWin_MIT_ResDataTypedef));
     memset(prid, 0, sizeof(SteadyWin_MIT_ResDataTypedef));
 
-    prid->can_rx_topic = Bus_SubscribeFromName(config->can_rx_topic_name, motor_can_cb);
-    prid->can_tx_topic = Bus_TopicRegister(config->can_tx_topic_name);
+    prid->can_rx_topic = xBusSubscribeFromName(config->can_rx_topic_name, motor_can_cb);
+    prid->can_tx_topic = xBusTopicRegister(config->can_tx_topic_name);
 
     prid->kd = config->kd;
     prid->kp = config->kp;
@@ -269,7 +269,7 @@ static void _motor_handle_init(INTF_Motor_HandleTypeDef* self, SteadyWin_MIT_Con
 }
 
 INTF_Motor_HandleTypeDef* GIM3505_8_Register(SteadyWin_MIT_ConfigTyepdef* config) {
-    INTF_Motor_HandleTypeDef* self = Bus_SharePtr(config->motor_name, sizeof(INTF_Motor_HandleTypeDef));
+    INTF_Motor_HandleTypeDef* self = pvSharePtr(config->motor_name, sizeof(INTF_Motor_HandleTypeDef));
     if (self == NULL)
         return NULL;
     _motor_handle_init(self, config);

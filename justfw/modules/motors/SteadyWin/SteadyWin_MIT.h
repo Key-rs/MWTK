@@ -38,8 +38,8 @@ typedef struct SteadyWin_MIT_Config {
 
 typedef struct SteadyWin_MIT_ResData {
     float angle_offset;
-    Bus_SubscriberTypeDef *can_rx_topic;
-    Bus_TopicHandleTypeDef *can_tx_topic;
+    BusSubscriberHandle_t can_rx_topic;
+    BusTopicHandle_t can_tx_topic;
     float kp;
     float kd;
     bool recived;
