@@ -1,20 +1,24 @@
-//
-// Created by Ukua on 2023/8/2.
-//
+#ifndef TINYBUS_H
+#define TINYBUS_H
 
-#ifndef JUSTFW_TINYBUS_H
-#define JUSTFW_TINYBUS_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-
+/* FreeRTOS 头文件 */
+#include "FreeRTOS.h"
+/* 接口文件 */
 #include "intf_sys.h"
+#include "tinybus_intf.h"
 
 /**
- * @brief 话题初始化
- * @return 0:成功 1:失败
+ * @brief 初始化 TinyBus
+ * @return pdPASS: 成功, pdFAIL: 失败
  */
-uint8_t Bus_Init();
+BaseType_t xBusInit(void);
 
-#endif  // JUSTFW_TINYBUS_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* TINYBUS_H */

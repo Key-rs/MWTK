@@ -6,11 +6,10 @@
 
 /* bsp */
 #include "intf_can.h"
-#include "intf_uart.h"
 
 /* 内置数据共享 */
-#include "intf_stream.h"
-#include "intf_tinybus.h"
+// #include "intf_tinybus.h"
+#include "stream_intf.h"
 
 /* 第三方库接口, JUSTFW没有继续封装 */
 #include "easyflash.h"
