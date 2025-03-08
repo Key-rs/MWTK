@@ -28,6 +28,7 @@ static void Stream_ManagerLoop() {
 #include "justfw_cfg.h"
 
     ListItem_t *pItem;
+    xPrintStream = pvSreachSharedPtr();
     while (1) {
         pItem = listGET_HEAD_ENTRY(&xStreamListenerList);
 
