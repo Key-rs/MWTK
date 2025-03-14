@@ -1,12 +1,24 @@
 #include "modules.h"
 
 #include "main.h"
+#include "modules_config.h"
 
 void Modules_Init() {
     __disable_irq();
+
+#ifdef USE_STEADYWIN_MIT_DRIVER
+    extern void SteadyWinMIT_Init();
     SteadyWinMIT_Init();
+#endif
+
+#ifdef USE_ODRIVE_CAN_DRIVER
+    extern void Odrive_Init();
+    Odrive_Init();
+#endif
+
+    MotorManager_Init();
+
     DR16_Init();
-    motor_cli_init();
 
     __enable_irq();
 }

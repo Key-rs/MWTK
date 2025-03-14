@@ -2,8 +2,7 @@
 #define __MODULES_H
 
 #include "DR16.h"
-#include "SteadyWin_MIT.h"
-#include "motor_cli.h"
+#include "motor_manager.h"
 
 void Modules_Init();
 

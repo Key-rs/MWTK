@@ -25,6 +25,7 @@ typedef enum INTF_Motor_State {
     MOTOR_STATE_RUNNING,
     MOTOR_STATE_STUCK,  // 堵转
     MOTOR_STATE_ERROR,
+    MOTOR_STATE_DISABLE  // 失能
 } INTF_Motor_StateTypeDef;
 
 typedef struct INTF_Motor_Handle {

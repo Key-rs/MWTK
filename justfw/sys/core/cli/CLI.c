@@ -45,7 +45,7 @@ void cli_on_start() {
 static void CLI_MainLoop() {
     while (1) {
         char cRxedChar;
-        while (xStreamBufferReceive(stream_cli_input, &cRxedChar, 1, portMAX_DELAY)) {
+        while (xStreamBufferReceive(stream_cli_input, &cRxedChar, 1, 0)) {
             /* code */
             cInputString[ucInputIndex] = cRxedChar;
             /* Just to space the output from the input. */
@@ -97,6 +97,7 @@ static void CLI_MainLoop() {
                 printf(">");
             }
         }
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 

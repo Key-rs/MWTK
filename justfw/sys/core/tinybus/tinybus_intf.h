@@ -11,6 +11,7 @@
 typedef struct BusTopicDef {
     const char *pcName;      // 话题名称
     List_t xSubscriberList;  // 订阅者列表
+    void *context;
 } BusTopicDef_t;
 typedef BusTopicDef_t *BusTopicHandle_t;
 
@@ -21,6 +22,7 @@ typedef struct BusSubscriberDef {
     void (*pvCallback)(void *, BusTopicHandle_t);  // 回调函数
     BaseType_t xEnable;                            // 订阅使能标志
     BusTopicHandle_t pxTopic;                      // 所属话题
+    void *context;
 } BusSubscriberDef_t;
 typedef BusSubscriberDef_t *BusSubscriberHandle_t;
 

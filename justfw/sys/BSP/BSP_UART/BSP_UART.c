@@ -99,11 +99,12 @@ UART_InstanceTypeDef *BSP_UART_Register(UART_InstanceConfigTypeDef *config) {
         // 启用RX Bus消息推送
         instance->rx_topic = xBusTopicRegister(config->rx_topic_name);
         // StreamBufferHandle_t rx_bus_stream = xStreamBufferCreate(config->recv_buff_size, 1);
-        instance->rx_listener->pvOnDataReceived = UART_Bus_Rx_CallBack;
-        instance->rx_listener->pvContext = instance;
+
         // instance->rx_buffer->register_output(instance->rx_buffer, rx_bus_stream);
         StreamBufferHandle_t rx_bus_stream = xSharedStreamOutputCreate(instance->rx_buffer, config->recv_buff_size);  // 注册一个用于截取RX消息的流，并且在截取后向Bus总线推送
         instance->rx_listener = xStreamListenerCreate(rx_bus_stream);                                                 // 监听截取的流
+        instance->rx_listener->pvOnDataReceived = UART_Bus_Rx_CallBack;
+        instance->rx_listener->pvContext = instance;
     }
 
     UART_instance[idx++] = instance;

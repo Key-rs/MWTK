@@ -55,7 +55,7 @@ BusSubscriberHandle_t xBusSubscribe(BusTopicHandle_t xTopic, void (*pvCallback)(
 BusSubscriberHandle_t xBusSubscribeFromName(char *cTopicName, void (*pvCallback)(void *, BusTopicHandle_t)) {
     BusTopicHandle_t xTopic = xBusTopicSearch((const char *)cTopicName);
     if (xTopic == NULL)
-        return NULL;
+        xTopic = xBusTopicRegister(cTopicName);
 
     return xBusSubscribe(xTopic, pvCallback);
 }

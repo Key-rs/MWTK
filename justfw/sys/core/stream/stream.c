@@ -12,7 +12,7 @@ void Stream_Init() {
     xTaskCreate(
         Stream_ManagerLoop,
         "StreamManager",
-        256,
+        512,
         NULL,
         1,
         NULL);
@@ -31,7 +31,6 @@ static void Stream_ManagerLoop() {
 
         while (pItem != listGET_END_MARKER(&xStreamListenerList)) {
             StreamListenerHandle_t listener = (StreamListenerHandle_t)listGET_LIST_ITEM_OWNER(pItem);
-            uint8_t buff[FORWARD_BUFFER_SIZE];
             size_t xDataLen = xStreamCheckAvailable(listener->xStream);
             if (xDataLen > 0) {
                 if (listener->pvOnDataReceived != NULL)
@@ -41,6 +40,8 @@ static void Stream_ManagerLoop() {
 
             pItem = listGET_NEXT(pItem);
         }
+
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 

@@ -49,8 +49,6 @@ typedef struct SteadyWin_MIT_ResData {
     float torque_constant;
 } SteadyWin_MIT_ResDataTypedef;
 
-void SteadyWinMIT_Init();
-
 INTF_Motor_HandleTypeDef *GIM3505_8_Register(SteadyWin_MIT_ConfigTyepdef *config);
 
 #endif

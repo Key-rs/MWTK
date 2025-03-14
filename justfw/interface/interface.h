@@ -15,6 +15,7 @@
 #include "intf_gimbal.h"
 #include "intf_leg.h"
 #include "intf_motor.h"
+#include "intf_motor_manager.h"
 #include "intf_navigation.h"
 #include "intf_serial.h"
 #include "intf_shooter.h"

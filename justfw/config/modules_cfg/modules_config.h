@@ -2,4 +2,6 @@
 #define __MODULES_CONFIG_H
 
 #define USE_STEADYWIN_MIT_DRIVER
+#define USE_ODRIVE_CAN_DRIVER
+
 #endif

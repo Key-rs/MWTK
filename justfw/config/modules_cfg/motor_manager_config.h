@@ -1,0 +1,8 @@
+#ifndef __MOTOR_MANAGER_CONFIG_H
+#define __MOTOR_MANAGER_CONFIG_H
+
+#define MOTOR_MANAGER_USE_CLI
+
+#define ODRIVE_USE_MANAGER
+
+#endif
