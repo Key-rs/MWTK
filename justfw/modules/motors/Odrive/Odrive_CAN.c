@@ -83,56 +83,40 @@ static void motor_send_mit(INTF_Motor_HandleTypeDef *self) {
     vBusPublish(priv->can_tx_topic, &msg);
 }
 
-static void can_callback(void *message, BusTopicHandle_t topic) {
+static void can_callback(void *message, BusSubscriberHandle_t subscriber) {
     INTF_CAN_MessageTypeDef *msg = (INTF_CAN_MessageTypeDef *)message;
-    if (topic->context == &motors) {
-        INTF_Motor_HandleTypeDef *m = NULL;
-        Odrive_CAN_ResDataTypedef *priv = NULL;
 
-        // 电机匹配
-        ListItem_t *item = listGET_HEAD_ENTRY(&motors);
-        while (item != listGET_END_MARKER(&motors)) {
-            m = listGET_LIST_ITEM_OWNER(item);
-            if (m->motor_id == msg->can_id >> 5) {
-                break;
-            } else {
-                m = NULL;
-            }
+    INTF_Motor_HandleTypeDef *m = (INTF_Motor_HandleTypeDef *)subscriber->context;
+    Odrive_CAN_ResDataTypedef *priv = (Odrive_CAN_ResDataTypedef *)m->private_data;
+    if (m->motor_id != msg->can_id >> 5)
+        return;
 
-            item = listGET_NEXT(item);
-        }
-        if (m == NULL)
-            return;
+    switch (msg->can_id & 0x01F) {
+    case 0x01:
+        // 电机心跳包
+        priv->axis_error = *(uint32_t *)(&msg->data[0]);
+        priv->axis_status = *(uint8_t *)(&msg->data[4]);
+        uint8_t flag = *(uint8_t *)(&msg->data[5]);
+        priv->motor_error = (flag & 0x01) == 1;
+        priv->encoder_error = ((flag >> 1) & 1) == 1;
+        priv->controller_error = ((flag >> 2) & 1) == 1;
+        priv->error = ((flag >> 3) & 1) == 1;
+        priv->trajectory_done = ((flag >> 7) & 1) == 1;
+        priv->life = msg->data[7];
+        break;
 
-        priv = (Odrive_CAN_ResDataTypedef *)m->private_data;
+    case 0x09:
+        // 电机位置包
+        m->real_angle = *(float *)(&msg->data[0]);
+        m->real_speed = *(float *)(&msg->data[4]);
+        break;
 
-        switch (msg->can_id & 0x01F) {
-        case 0x01:
-            // 电机心跳包
-            priv->axis_error = *(uint32_t *)(&msg->data[0]);
-            priv->axis_status = *(uint8_t *)(&msg->data[4]);
-            uint8_t flag = *(uint8_t *)(&msg->data[5]);
-            priv->motor_error = (flag & 0x01) == 1;
-            priv->encoder_error = ((flag >> 1) & 1) == 1;
-            priv->controller_error = ((flag >> 2) & 1) == 1;
-            priv->error = ((flag >> 3) & 1) == 1;
-            priv->trajectory_done = ((flag >> 7) & 1) == 1;
-            priv->life = msg->data[7];
-            break;
+    default:
+        break;
+    }
 
-        case 0x09:
-            // 电机位置包
-            m->real_angle = *(float *)(&msg->data[0]);
-            m->real_speed = *(float *)(&msg->data[4]);
-            break;
-
-        default:
-            break;
-        }
-
-        if (priv->axis_status == 0x08) {
-            m->motor_state = MOTOR_STATE_RUNNING;
-        }
+    if (priv->axis_status == 0x08) {
+        m->motor_state = MOTOR_STATE_RUNNING;
     }
 }
 
@@ -215,7 +199,7 @@ INTF_Motor_HandleTypeDef *Odrive_Register(Odrive_CAN_ConfigTypedef *config) {
 
     priv->can_tx_topic = xBusTopicRegister(config->can_tx_topic_name);
     priv->can_rx_topic = xBusSubscribeFromName(config->can_rx_topic_name, can_callback);
-    priv->can_rx_topic->pxTopic->context = &motors;
+    priv->can_rx_topic->context = (void *)m;
     priv->axis_error = ODRIVE_AXIS_ERROR_UNDEFINED;
     priv->axis_status = ODRIVE_AXIS_STATUS_UNDEFINED;
     priv->kd = config->kd;

@@ -1,9 +1,30 @@
 #include "Steadywin_MIT.h"
 #define STEADY_MASTER_ID 0x00
+#include "motor_manager_config.h"
 #include "user_lib.h"
 
 static uint8_t count;
 static INTF_Motor_HandleTypeDef* motors[STEADYWIN_MOTOR_MAX_NUM] = {0};
+
+#ifdef STEADYWIN_CAN_USE_MANAGER
+#include <stdio.h>
+static void apply_control(ITNF_ManagerdMotor_HandleTypedef* manager) {
+    INTF_Motor_HandleTypeDef* m = manager->motor;
+    SteadyWin_MIT_ResDataTypedef* priv = m->private_data;
+    priv->kd = manager->mit_parms.kd;
+    priv->kp = manager->mit_parms.kp;
+}
+
+static void print_info(ITNF_ManagerdMotor_HandleTypedef* manager, char* buff, uint16_t len) {
+    INTF_Motor_HandleTypeDef* m = manager->motor;
+    SteadyWin_MIT_ResDataTypedef* priv = m->private_data;
+    // printf("ErrorCode:%d\n\r", priv->axis_error);
+    // printf("Parms kp:%f,kd:%f\n\r", priv->kp, priv->kd);
+
+    snprintf(buff, len, "ErrorCode:%d\n\rParms kp:%f,kd:%f\n\r", priv->err, priv->kp, priv->kd);
+}
+
+#endif
 
 static void motor_can_msg_init(INTF_Motor_HandleTypeDef* self, INTF_CAN_MessageTypeDef* msg) {
     msg->can_id = self->motor_id;
@@ -107,27 +128,19 @@ static void motor_set_torque(INTF_Motor_HandleTypeDef* self, float torque) {
     self->target_torque = torque;
 }
 
-static void motor_can_cb(void* message, BusTopicHandle_t topic) {
+static void motor_can_cb(void* message, BusSubscriberHandle_t subscriber) {
     INTF_CAN_MessageTypeDef* msg = (INTF_CAN_MessageTypeDef*)message;
 
     if (msg->id_type == BSP_CAN_ID_EXT || msg->can_id != STEADY_MASTER_ID) {
         return;
     }
 
-    INTF_Motor_HandleTypeDef* m = NULL;
+    INTF_Motor_HandleTypeDef* m = (INTF_Motor_HandleTypeDef*)subscriber->context;
     SteadyWin_MIT_ResDataTypedef* priv = NULL;
     uint8_t id = msg->data[0];
 
-    // 匹配电机
-    for (uint8_t i = 0; i < count; i++) {
-        if (motors[i]->motor_id == id) {
-            m = motors[i];
-        }
-    }
-
-    if (m == NULL) {
+    if (m->motor_id != id)
         return;
-    }
 
     priv = m->private_data;
     m->motor_state = MOTOR_STATE_RUNNING;
@@ -259,6 +272,7 @@ static void _motor_handle_init(INTF_Motor_HandleTypeDef* self, SteadyWin_MIT_Con
     memset(prid, 0, sizeof(SteadyWin_MIT_ResDataTypedef));
 
     prid->can_rx_topic = xBusSubscribeFromName(config->can_rx_topic_name, motor_can_cb);
+    prid->can_rx_topic->context = (void*)self;
     prid->can_tx_topic = xBusTopicRegister(config->can_tx_topic_name);
 
     prid->kd = config->kd;
@@ -266,6 +280,16 @@ static void _motor_handle_init(INTF_Motor_HandleTypeDef* self, SteadyWin_MIT_Con
     prid->last_command = STEADYWIN_MIT_COMMAND_NONE;
 
     self->private_data = prid;
+
+#ifdef STEADYWIN_CAN_USE_MANAGER
+#include "motor_manager.h"
+    ITNF_ManagerdMotor_HandleTypedef* managed_motor = ManagedMotor_Create(self);
+    managed_motor->motor_name = config->motor_name;
+    managed_motor->mit_parms.kd = config->kd;
+    managed_motor->mit_parms.kp = config->kp;
+    managed_motor->ApplyControl = apply_control;
+    managed_motor->MotorInfo = print_info;
+#endif
 }
 
 INTF_Motor_HandleTypeDef* GIM3505_8_Register(SteadyWin_MIT_ConfigTyepdef* config) {
@@ -285,11 +309,6 @@ INTF_Motor_HandleTypeDef* GIM3505_8_Register(SteadyWin_MIT_ConfigTyepdef* config
 
     return self;
 }
-
-// void SteadyWin_Init() {
-//     osThreadDef(SteadyWin_MIT_MainLoopTask, _motor_mainloop, osPriorityLow, 0, 256);
-//     SteadyWin_MIT_MainLoopHandle = osThreadCreate(osThread(SteadyWin_MIT_MainLoopTask), NULL);
-// }
 
 void SteadyWinMIT_Init() {
     (void)motor_set_zero;  // 暂时没有使用的函数

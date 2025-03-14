@@ -16,6 +16,11 @@ void Modules_Init() {
     Odrive_Init();
 #endif
 
+#ifdef USE_GM_MOTOR_DRIVER
+    extern void GM_Init();
+    GM_Init();
+#endif
+
     MotorManager_Init();
 
     DR16_Init();

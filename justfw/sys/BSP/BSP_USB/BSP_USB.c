@@ -23,7 +23,7 @@ static void usb_rx_to_bus_handler(StreamListenerHandle_t listener) {
     Bus_Publish(usb_rx_topic, &msg);
 }
 
-static void usb_tx_bus_callback(void *message, BusTopicHandle_t topic) {
+static void usb_tx_bus_callback(void *message, BusSubscriberDef subscriber) {
     INTF_Serial_MessageTypeDef *msg = (INTF_Serial_MessageTypeDef *)message;
     xStreamWrite(usb_tx_buffer, msg->data, msg->len, portMAX_DELAY);
 }

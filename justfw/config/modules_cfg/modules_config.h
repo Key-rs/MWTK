@@ -3,5 +3,6 @@
 
 #define USE_STEADYWIN_MIT_DRIVER
 #define USE_ODRIVE_CAN_DRIVER
+#define USE_GM_MOTOR_DRIVER
 
 #endif

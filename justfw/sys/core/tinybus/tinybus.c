@@ -40,7 +40,7 @@ BusTopicHandle_t xBusTopicRegister(const char *pcTopicName) {
     return topic;
 }
 
-BusSubscriberHandle_t xBusSubscribe(BusTopicHandle_t xTopic, void (*pvCallback)(void *message, BusTopicHandle_t topic)) {
+BusSubscriberHandle_t xBusSubscribe(BusTopicHandle_t xTopic, void (*pvCallback)(void *message, BusSubscriberHandle_t subscriber)) {
     BusSubscriberHandle_t subscriber = (BusSubscriberHandle_t)JUST_MALLOC(sizeof(BusTopicDef_t));
     subscriber->pxTopic = xTopic;
     subscriber->pvCallback = pvCallback;
@@ -52,7 +52,7 @@ BusSubscriberHandle_t xBusSubscribe(BusTopicHandle_t xTopic, void (*pvCallback)(
     return subscriber;
 }
 
-BusSubscriberHandle_t xBusSubscribeFromName(char *cTopicName, void (*pvCallback)(void *, BusTopicHandle_t)) {
+BusSubscriberHandle_t xBusSubscribeFromName(char *cTopicName, void (*pvCallback)(void *message, BusSubscriberHandle_t subscriber)) {
     BusTopicHandle_t xTopic = xBusTopicSearch((const char *)cTopicName);
     if (xTopic == NULL)
         xTopic = xBusTopicRegister(cTopicName);
@@ -65,7 +65,7 @@ void vBusPublish(BusTopicHandle_t pxTopic, void *pvMessage) {
 
     while (item != listGET_END_MARKER(&pxTopic->xSubscriberList)) {
         BusSubscriberHandle_t subscriber = listGET_LIST_ITEM_OWNER(item);
-        subscriber->pvCallback(pvMessage, pxTopic);
+        subscriber->pvCallback(pvMessage, subscriber);
 
         item = listGET_NEXT(item);
     }

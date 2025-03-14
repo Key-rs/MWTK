@@ -25,15 +25,11 @@ static uint8_t idx;
 static UART_InstanceTypeDef *UART_instance[DEVICE_UART_CNT] = {NULL};
 
 // TX Bus总线 -> TX发送数据缓冲区
-void UART_Bus_TX_CallBack(void *message, BusTopicHandle_t topic) {
+void UART_Bus_TX_CallBack(void *message, BusSubscriberHandle_t subscriber) {
     INTF_Serial_MessageTypeDef *msg = (INTF_Serial_MessageTypeDef *)message;
-    UART_InstanceTypeDef *instance;
-    for (int i = 0; i < DEVICE_UART_CNT; ++i) {
-        instance = UART_instance[i];
-        if (instance->tx_topic->pxTopic == topic) {
-            xStreamBufferSend(instance->tx_buffer, msg->data, msg->len, portMAX_DELAY);
-            break;
-        }
+    UART_InstanceTypeDef *instance = (UART_InstanceTypeDef *)subscriber->context;
+    if (instance->tx_topic->pxTopic == subscriber->pxTopic) {
+        xStreamBufferSend(instance->tx_buffer, msg->data, msg->len, portMAX_DELAY);
     }
 }
 
@@ -93,6 +89,7 @@ UART_InstanceTypeDef *BSP_UART_Register(UART_InstanceConfigTypeDef *config) {
     if (config->tx_topic_name != NULL) {
         // 启用TX Bus消息监听
         instance->tx_topic = xBusSubscribeFromName(config->tx_topic_name, UART_Bus_TX_CallBack);
+        instance->tx_topic->context = (void *)instance;
     }
 
     if (config->rx_topic_name != NULL) {

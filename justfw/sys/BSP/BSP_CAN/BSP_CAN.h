@@ -27,7 +27,7 @@ void BSP_CAN_Transmit(uint8_t *data, INTF_CAN_ID_Type idType, INTF_CAN_RTR_Type 
  * @param *topic:来源话题
  * @note 该函数会将消息储存在fifo中
  */
-void BSP_CAN_TX_CallBack(void *message, BusTopicHandle_t topic);
+void BSP_CAN_TX_CallBack(void *message, BusSubscriberHandle_t subscriber);
 
 void BSP_CAN_MainLoop();
 
