@@ -202,7 +202,7 @@ static void print_info(ITNF_ManagerdMotor_HandleTypedef *manager, char *buff, ui
     // printf("ErrorCode:%d\n\r", priv->axis_error);
     // printf("Parms kp:%f,kd:%f\n\r", priv->kp, priv->kd);
 
-    snprintf(buff, len, "Angle: kp=%f ki=%f kd=%f\n\r Speed: kp=%f ki=%f kd=%f",
+    snprintf(buff, len, "Angle: kp=%f ki=%f kd=%f\n\rSpeed: kp=%f ki=%f kd=%f\n\r",
              priv->angle_pid.Kp,
              priv->angle_pid.Ki,
              priv->angle_pid.Kd,

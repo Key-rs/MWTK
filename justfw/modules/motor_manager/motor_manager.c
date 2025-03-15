@@ -162,13 +162,21 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
                 snprintf(pcWriteBuffer, xWriteBufferLen, GREEN "Success!\n\r" NC);
             }
         } else if (strcmp(param[1], "monitor") == 0) {
-            StreamHandle_t console_input = pvSreachSharedPtr(CLI_INPUT_STREAM);
-            configASSERT(console_input);
+            static StreamHandle_t console_input;
+            if (console_input == NULL) {
+                console_input = pvSreachSharedPtr(CLI_INPUT_STREAM);
+            }
+
+            if (console_input == NULL) {
+                snprintf(pcWriteBuffer, xWriteBufferLen, RED "Stream Error!\n\r" NC);
+
+                return pdFALSE;
+            }
 
             while (true) {
                 char input;
                 if (xStreamRead(console_input, &input, 1, 0) && input == 0x03) {
-                    break;
+                    return pdFALSE;
                 }
 
                 printf("Motor:%f,%f,%f,%f,%f,%f\r\n", m->target_angle, m->real_angle, m->target_speed, m->real_speed, m->target_torque, m->real_torque);
@@ -193,6 +201,18 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
                 managed_motor->mit_parms.kp = value;
             } else if (strcmp(param[2], "kd") == 0) {
                 managed_motor->mit_parms.kd = value;
+            } else if (strcmp(param[2], "angle_kp") == 0) {
+                managed_motor->pid_parms.angle_kp = value;
+            } else if (strcmp(param[2], "angle_ki") == 0) {
+                managed_motor->pid_parms.angle_ki = value;
+            } else if (strcmp(param[2], "angle_kd") == 0) {
+                managed_motor->pid_parms.angle_kd = value;
+            } else if (strcmp(param[2], "speed_kp") == 0) {
+                managed_motor->pid_parms.velocity_kp = value;
+            } else if (strcmp(param[2], "speed_ki") == 0) {
+                managed_motor->pid_parms.velocity_ki = value;
+            } else if (strcmp(param[2], "speed_kd") == 0) {
+                managed_motor->pid_parms.velocity_kd = value;
             } else {
                 goto err_use;
             }

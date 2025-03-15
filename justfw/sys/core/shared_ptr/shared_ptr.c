@@ -66,7 +66,9 @@ void vSharePtrStatic(const char *pcName, void *pvData) {
     }
 
     pItem = (ListItem_t *)JUST_MALLOC(sizeof(ListItem_t));
+    configASSERT(pItem);
     xSharedPtr = JUST_MALLOC(sizeof(SharedPtr_t));
+    configASSERT(xSharedPtr);
     xSharedPtr->name = (char *)pcName;
     xSharedPtr->data = pvData;
 

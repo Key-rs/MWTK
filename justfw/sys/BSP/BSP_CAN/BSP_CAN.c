@@ -98,6 +98,11 @@ void BSP_CAN_Transmit(uint8_t *data, INTF_CAN_ID_Type idType, INTF_CAN_RTR_Type 
     uint32_t tx_mailBox;
 
     HAL_CAN_AddTxMessage(port, &tx_header, data, &tx_mailBox);
+
+    static uint8_t count = 0;
+    count++;
+    if (count == 0xFF)
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 }
 
 /**

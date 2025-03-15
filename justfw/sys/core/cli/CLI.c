@@ -59,6 +59,7 @@ static void CLI_MainLoop() {
                 if (xSemaphoreTake(xCLIMutex, portMAX_DELAY) == pdPASS) {
                     BaseType_t xMoreDataToFollow;
                     char *pcOutputBuffer = FreeRTOS_CLIGetOutputBuffer();
+                    bzero(pcOutputBuffer, configCOMMAND_INT_MAX_OUTPUT_SIZE);
                     cInputString[ucInputIndex] = '\0';
                     do {
                         xMoreDataToFollow = FreeRTOS_CLIProcessCommand(
@@ -118,7 +119,7 @@ void CLI_Init() {
     // 对外共享命令行输入流，允许上层应用直接读取命令行输入流
     vSharePtrStatic(CLI_INPUT_STREAM, stream_cli_input);
 
-    xTaskCreate(CLI_MainLoop, "CLI_Task", 512, NULL, 255, NULL);
+    xTaskCreate(CLI_MainLoop, "CLI_Task", 1024, NULL, 255, NULL);
 
     // xBusSubscribeFromName("USB_ON", on_start);
 }
