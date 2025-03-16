@@ -127,7 +127,8 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
                 "Init",
                 "Running",
                 "Stuck",
-                "Error"};
+                "Error",
+                "Disable"};
 
             uint16_t offset = snprintf(pcWriteBuffer,
                                        xWriteBufferLen,
@@ -182,6 +183,8 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
                 printf("Motor:%f,%f,%f,%f,%f,%f\r\n", m->target_angle, m->real_angle, m->target_speed, m->real_speed, m->target_torque, m->real_torque);
                 vTaskDelay(pdMS_TO_TICKS(20));
             }
+        } else {
+            goto err_use;
         }
 
         return pdFALSE;

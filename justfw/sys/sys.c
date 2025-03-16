@@ -18,6 +18,8 @@ void Sys_Init() {
     BSP_UART_Init();
     BSP_USB_Init();
     BSP_CAN_Init();
+    Bsp_Buzzer_Init();
+
     DWT_Init(168);
     delay_init();
 

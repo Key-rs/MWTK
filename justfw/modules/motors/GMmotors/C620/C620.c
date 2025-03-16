@@ -183,6 +183,14 @@ void C620_SetTorque_t(struct INTF_Motor_Handle *self, float torque) {
     self->target_torque = torque;
 }
 
+void C620_Disable_t(struct INTF_Motor_Handle *self) {
+    self->motor_state = MOTOR_STATE_DISABLE;
+}
+
+void C620_Enable_t(struct INTF_Motor_Handle *self) {
+    self->motor_state = MOTOR_STATE_RUNNING;
+}
+
 #ifdef C610_USE_MANAGER
 #include <stdio.h>
 
@@ -256,6 +264,7 @@ INTF_Motor_HandleTypeDef *C620_Register(C620_ConfigTypeDef *config) {
     motor->set_speed = C620_SetSpeed_t;
     motor->set_angle = C620_SetAngle_t;
     motor->set_torque = C620_SetTorque_t;
+
     for (int i = 0; i < GM_BUFFER_NUM; ++i) {
         if (GM_Buffer[i].can_tx_topic == priv->can_tx_topic) {
             g_c620_motors[i][motor->motor_id - 1] = motor;
