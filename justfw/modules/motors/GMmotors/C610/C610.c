@@ -180,7 +180,8 @@ void C610_SetSpeed_t(struct INTF_Motor_Handle *self, float speed) {
 }
 
 void C610_SetAngle_t(struct INTF_Motor_Handle *self, float angle) {
-    self->target_angle = angle;
+    C610_ResDataTypeDef *priv = self->private_data;
+    self->target_angle = angle + priv->offset_angle;
 }
 
 void C610_SetTorque_t(struct INTF_Motor_Handle *self, float torque) {
