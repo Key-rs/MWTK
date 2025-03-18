@@ -61,7 +61,7 @@ static void motor_send_mit(INTF_Motor_HandleTypeDef *self) {
     msg.id_type = CAN_ID_STD;
     msg.rtr_type = CAN_RTR_DATA;
 
-    float angle_mapped = float_constrain(self->target_angle, -12.5, 12.5);
+    float angle_mapped = float_constrain(self->target_angle, -12.5, 12.5) + self->angle_offset;
     uint16_t position = (angle_mapped + 12.5) * 65535 / 25;
     float speed = float_constrain(self->target_speed, -65, 65);
     uint16_t int_speed = (speed + 65) * 4095 / 130;
@@ -190,6 +190,7 @@ INTF_Motor_HandleTypeDef *Odrive_Register(Odrive_CAN_ConfigTypedef *config) {
     m->motor_state = MOTOR_STATE_INIT;
     m->motor_id = config->motor_id;
     m->private_data = priv;
+    m->motor_mode = MOTOR_MODE_MIT;
 
     m->set_angle = motor_set_angle;
     m->set_speed = motor_set_speed;

@@ -14,6 +14,9 @@ INTF_Motor_HandleTypeDef *m_r_joint3;
 INTF_Motor_HandleTypeDef *m_r_joint4;
 
 void Engin_Little_Hande_Motor_Init() {
+    /*====================工程小臂一========================*/
+
+    // ==============1==================
     Odrive_CAN_ConfigTypedef config = {
         .motor_id = 1,
         .can_rx_topic_name = "/CAN2/RX",
@@ -24,7 +27,6 @@ void Engin_Little_Hande_Motor_Init() {
     m_l_joint1 = Odrive_Register(&config);
 
     // ==============2==================
-
     PID_Init_Config_s angle_pid_2 = {
         .Kp = 60.000000f,
         .Ki = 0.001000f,
@@ -64,7 +66,6 @@ void Engin_Little_Hande_Motor_Init() {
         .can_rx_topic_name = "/CAN2/RX",
         .can_tx_topic_name = "/CAN2/TX",
     };
-    m_l_joint2 = C610_Register(&config2);
 
     // ==============3==================
 
@@ -107,7 +108,6 @@ void Engin_Little_Hande_Motor_Init() {
         .can_rx_topic_name = "/CAN2/RX",
         .can_tx_topic_name = "/CAN2/TX",
     };
-    m_l_joint3 = C610_Register(&config3);
 
     // ==============4==================
 
@@ -150,5 +150,35 @@ void Engin_Little_Hande_Motor_Init() {
         .can_rx_topic_name = "/CAN2/RX",
         .can_tx_topic_name = "/CAN2/TX",
     };
+
+    m_l_joint2 = C610_Register(&config2);
+    m_l_joint3 = C610_Register(&config3);
     m_l_joint4 = C610_Register(&config4);
+
+    /*====================工程小臂二========================*/
+
+    // ==============1==================
+    Odrive_CAN_ConfigTypedef config_r = {
+        .motor_id = 2,  // 思泰威电机，不会影响C610
+        .can_rx_topic_name = "/CAN2/RX",
+        .can_tx_topic_name = "/CAN2/TX",
+        .kp = 0.01,
+        .kd = 0.001,
+        .motor_name = "/motor/l_joint1"};
+    m_r_joint1 = Odrive_Register(&config);
+
+    // ==============2==================
+
+    config2.motor_id = 6;
+    m_r_joint2 = C610_Register(&config2);
+
+    // ==============3==================
+
+    config3.motor_id = 7;
+    m_r_joint3 = C610_Register(&config3);
+
+    // ==============4==================
+
+    config4.motor_id = 8;
+    m_r_joint4 = C610_Register(&config4);
 }

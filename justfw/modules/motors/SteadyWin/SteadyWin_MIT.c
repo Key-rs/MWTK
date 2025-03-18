@@ -18,8 +18,6 @@ static void apply_control(ITNF_ManagerdMotor_HandleTypedef* manager) {
 static void print_info(ITNF_ManagerdMotor_HandleTypedef* manager, char* buff, uint16_t len) {
     INTF_Motor_HandleTypeDef* m = manager->motor;
     SteadyWin_MIT_ResDataTypedef* priv = m->private_data;
-    // printf("ErrorCode:%d\n\r", priv->axis_error);
-    // printf("Parms kp:%f,kd:%f\n\r", priv->kp, priv->kd);
 
     snprintf(buff, len, "ErrorCode:%d\n\rParms kp:%f,kd:%f\n\r", priv->err, priv->kp, priv->kd);
 }

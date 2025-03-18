@@ -89,6 +89,7 @@ CaliMotor_Handle_t Odrive_CaliMotor_Create(INTF_Motor_HandleTypeDef *handle, flo
     CaliMotor_Handle_t cali_motor = JUST_MALLOC(sizeof(CaliMotor_t));
     cali_motor->handle = handle;
     cali_motor->offset_angle = offset_angle;
+    cali_motor->start_calibration = Odrive_Run_Calibration_t;
 }
 
 void cali_motor_set_angle(CaliMotor_Handle_t self, float angle) {

@@ -10,6 +10,7 @@ typedef enum {
 
 typedef struct CaliMotorDef {
     INTF_Motor_HandleTypeDef *handle;
+    float angle;              // 再CaliMotor坐标系下的实际角度
     float cali_angle;         // 抵达校准位点的实际角度
     float offset_angle;       // 以抵达校准点的实际角度作为参考，到真正的零位角度
     float cali_speed;         // 校准过程中的速度
@@ -17,6 +18,9 @@ typedef struct CaliMotorDef {
     void *private;
     float _offset_angle;                                   // 电机实际的零位偏移角度
     void (*start_calibration)(struct CaliMotorDef *self);  // 开始校准
+
+    uint32_t _count;     // 步进角计数值
+    uint32_t _dt_angle;  // 微分步进角
 } CaliMotor_t;
 
 typedef CaliMotor_t *CaliMotor_Handle_t;
