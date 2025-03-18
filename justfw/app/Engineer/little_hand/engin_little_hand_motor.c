@@ -1,6 +1,6 @@
 #include "C610.h"
 #include "Odrive_CAN.h"
-#include "cali_motor.h"
+#include "enstep_motor.h"
 #include "interface.h"
 
 INTF_Motor_HandleTypeDef *m_l_joint1;
@@ -12,6 +12,16 @@ INTF_Motor_HandleTypeDef *m_r_joint1;
 INTF_Motor_HandleTypeDef *m_r_joint2;
 INTF_Motor_HandleTypeDef *m_r_joint3;
 INTF_Motor_HandleTypeDef *m_r_joint4;
+
+EnStepMotorHandle_t em_l1;
+EnStepMotorHandle_t em_l2;
+EnStepMotorHandle_t em_l3;
+EnStepMotorHandle_t em_l4;
+
+EnStepMotorHandle_t em_r1;
+EnStepMotorHandle_t em_r2;
+EnStepMotorHandle_t em_r3;
+EnStepMotorHandle_t em_r4;
 
 void Engin_Little_Hande_Motor_Init() {
     /*====================工程小臂一========================*/
@@ -162,23 +172,35 @@ void Engin_Little_Hande_Motor_Init() {
         .motor_id = 2,  // 思泰威电机，不会影响C610
         .can_rx_topic_name = "/CAN2/RX",
         .can_tx_topic_name = "/CAN2/TX",
-        .kp = 0.01,
-        .kd = 0.001,
-        .motor_name = "/motor/l_joint1"};
-    m_r_joint1 = Odrive_Register(&config);
+        .kp = 0.0000f,
+        .kd = 1.0f,
+        .motor_name = "/motor/r_joint1"};
+    m_r_joint1 = Odrive_Register(&config_r);
+    m_r_joint1->disable(m_r_joint1);
 
     // ==============2==================
-
+    config2.motor_ptr_name = "/motor/r_joint2";
+    config2.motor_mode = MOTOR_MODE_ANGLE;
     config2.motor_id = 6;
     m_r_joint2 = C610_Register(&config2);
 
     // ==============3==================
-
+    config3.motor_ptr_name = "/motor/r_joint3";
     config3.motor_id = 7;
     m_r_joint3 = C610_Register(&config3);
 
-    // ==============4==================
-
+    // // ==============4==================
+    config4.motor_ptr_name = "/motor/r_joint4";
     config4.motor_id = 8;
     m_r_joint4 = C610_Register(&config4);
+
+    em_l1 = EnStepMotor_Create(m_l_joint1, "l1", 0, 0.001f, 0, ENSTEP_ODRIVE);
+    em_l2 = EnStepMotor_Create(m_l_joint2, "l2", -138.0f, 60.0f, 0.1f, ENSTEP_C610);
+    em_l3 = EnStepMotor_Create(m_l_joint3, "l3", -59.5f, 60.0f, 0.1f, ENSTEP_C610);
+    em_l4 = EnStepMotor_Create(m_l_joint4, "l4", 150.0f, 60.0f, 0.1f, ENSTEP_C610);
+
+    em_r1 = EnStepMotor_Create(m_r_joint1, "r1", 0, 0.001f, 0, ENSTEP_ODRIVE);
+    em_r2 = EnStepMotor_Create(m_r_joint2, "r2", -138.0f, 60.0f, 0.1f, ENSTEP_C610);
+    em_r3 = EnStepMotor_Create(m_r_joint3, "r3", -59.5f, 60.0f, 0.1f, ENSTEP_C610);
+    em_r4 = EnStepMotor_Create(m_r_joint4, "r4", -150.0f, 60.0f, 0.1f, ENSTEP_C610);
 }

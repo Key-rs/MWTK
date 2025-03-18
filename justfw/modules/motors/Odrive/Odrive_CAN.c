@@ -26,6 +26,10 @@ static void motor_enable(INTF_Motor_HandleTypeDef *self) {
     msg.id_type = CAN_ID_STD;
     msg.can_id = self->motor_id << 5 | 0x07;
     // self->motor_state = MOTOR_STATE_INIT;
+    if (self->motor_state == MOTOR_STATE_DISABLE) {
+        self->motor_state = MOTOR_STATE_INIT;
+    }
+
     msg.data[0] = 0x08;  // 开启电机
     vBusPublish(priv->can_tx_topic, &msg);
 }
@@ -54,6 +58,7 @@ static void motor_set_torque(INTF_Motor_HandleTypeDef *self, float torque) {
     self->target_torque = torque;
 }
 
+/* 狗屎，狗都不用这个！ */
 static void motor_send_mit(INTF_Motor_HandleTypeDef *self) {
     Odrive_CAN_ResDataTypedef *priv = self->private_data;
     INTF_CAN_MessageTypeDef msg;
@@ -77,8 +82,29 @@ static void motor_send_mit(INTF_Motor_HandleTypeDef *self) {
     msg.data[3] = (kp >> 8 & 0x0F) | (int_speed & 0x0F) << 4;
     msg.data[4] = kp & 0xFF;
     msg.data[5] = kd >> 4;
-    msg.data[6] = ((kd << 4) & 0x0F) | ((torque >> 8) & 0xF0);
+    msg.data[6] = ((kd << 4) & 0xF0) | ((torque >> 8) & 0x0F);
     msg.data[7] = torque & 0xFF;
+
+    vBusPublish(priv->can_tx_topic, &msg);
+}
+
+void motor_send_mit_cmd(INTF_Motor_HandleTypeDef *self) {
+    Odrive_CAN_ResDataTypedef *priv = self->private_data;
+    INTF_CAN_MessageTypeDef msg;
+    msg.can_id = self->motor_id << 5 | 0x00C;
+    msg.id_type = CAN_ID_STD;
+    msg.rtr_type = CAN_RTR_DATA;
+
+    bzero(msg.data, 8);
+
+    memcpy(&msg.data[0], &self->target_angle, 4);
+    float speed = float_constrain(self->target_speed, -65, 65);
+    uint16_t int_speed = (speed + 65) * 4095 / 130;
+    memcpy(&msg.data[4], &int_speed, 2);
+
+    float f_torque = float_constrain(self->target_torque, -50, 50);
+    uint16_t torque = (f_torque + 50) * 4095 / 100;
+    memcpy(&msg.data[6], &torque, 2);
 
     vBusPublish(priv->can_tx_topic, &msg);
 }
@@ -113,6 +139,9 @@ static void can_callback(void *message, BusSubscriberHandle_t subscriber) {
 
     default:
         break;
+    }
+    if (m->motor_state == MOTOR_STATE_DISABLE) {
+        return;
     }
 
     if (priv->axis_status == 0x08) {
@@ -149,6 +178,8 @@ static void odrive_mainLoop() {
             }
 
             if (m->motor_state == MOTOR_STATE_RUNNING) {
+                // (void)motor_send_mit;   // 简直就是一坨
+                // motor_send_mit_cmd(m);  // 无法直接设置Kp Ki Kd值，但是可以正常使用
                 motor_send_mit(m);
             }
 
