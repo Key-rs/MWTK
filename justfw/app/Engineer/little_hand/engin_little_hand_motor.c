@@ -8,6 +8,11 @@ INTF_Motor_HandleTypeDef *m_l_joint2;
 INTF_Motor_HandleTypeDef *m_l_joint3;
 INTF_Motor_HandleTypeDef *m_l_joint4;
 
+INTF_Motor_HandleTypeDef *m_r_joint1;
+INTF_Motor_HandleTypeDef *m_r_joint2;
+INTF_Motor_HandleTypeDef *m_r_joint3;
+INTF_Motor_HandleTypeDef *m_r_joint4;
+
 void Engin_Little_Hande_Motor_Init() {
     Odrive_CAN_ConfigTypedef config = {
         .motor_id = 1,

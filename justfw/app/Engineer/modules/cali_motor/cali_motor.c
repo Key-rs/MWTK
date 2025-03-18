@@ -54,7 +54,6 @@ static void C610_Run_Calibration_t(CaliMotor_Handle_t self) {
     if (d_angle > 0)
         step = -step;
 
-    // printf("steps:%u,d_angle:%f" steps_counter, d_angle);
     printf("Step:%lu", steps_counter);
     printf("Dangle:%f", d_angle);
 
@@ -81,6 +80,15 @@ CaliMotor_Handle_t C610_CaliMotor_Create(INTF_Motor_HandleTypeDef *handle, float
     cali_motor->status = CALIMOTOR_NO;
 
     return cali_motor;
+}
+
+static void Odrive_Run_Calibration_t(CaliMotor_Handle_t self) {
+}
+
+CaliMotor_Handle_t Odrive_CaliMotor_Create(INTF_Motor_HandleTypeDef *handle, float offset_angle) {
+    CaliMotor_Handle_t cali_motor = JUST_MALLOC(sizeof(CaliMotor_t));
+    cali_motor->handle = handle;
+    cali_motor->offset_angle = offset_angle;
 }
 
 void cali_motor_set_angle(CaliMotor_Handle_t self, float angle) {
