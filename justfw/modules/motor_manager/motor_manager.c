@@ -127,7 +127,8 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
                 "Init",
                 "Running",
                 "Stuck",
-                "Error"};
+                "Error",
+                "Disable"};
 
             uint16_t offset = snprintf(pcWriteBuffer,
                                        xWriteBufferLen,
@@ -182,14 +183,33 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
                 printf("Motor:%f,%f,%f,%f,%f,%f\r\n", m->target_angle, m->real_angle, m->target_speed, m->real_speed, m->target_torque, m->real_torque);
                 vTaskDelay(pdMS_TO_TICKS(20));
             }
+        } else {
+            goto err_use;
         }
 
         return pdFALSE;
     }
 
     if (param_len == 4) {
-        float value = strtof(param[3], NULL);
+        if (strcmp(param[1], "set") == 0) {
+            if (strcmp(param[2], "mode") == 0) {
+                if (m->motor_mode == MOTOR_MODE_MIT) {
+                    snprintf(pcWriteBuffer, xWriteBufferLen, RED "Not Surport!!\n\r" NC);
+                    return pdFALSE;
+                }
 
+                if (strcmp(param[3], "angle") == 0) {
+                    m->set_mode(m, MOTOR_MODE_ANGLE);
+                } else if (strcmp(param[3], "speed") == 0) {
+                    m->set_mode(m, MOTOR_MODE_SPEED);
+                } else if (strcmp(param[3], "torque") == 0) {
+                    m->set_mode(m, MOTOR_MODE_TORQUE);
+                } else
+                    goto err_use;
+            }
+        }
+
+        float value = strtof(param[3], NULL);
         if (strcmp(param[1], "set") == 0) {
             if (strcmp(param[2], "angle") == 0) {
                 m->set_angle(m, value);

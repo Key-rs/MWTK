@@ -46,6 +46,7 @@ void C610_SetCurrent(uint8_t id, int16_t current, BusTopicHandle_t can_tx_topic)
     } else {
         buffer->buffer_0x200[(id - 1) * 2] = current >> 8;
         buffer->buffer_0x200[(id - 1) * 2 + 1] = current;
+        buffer->buffer_0x200[(id - 1) * 2 + 1] = current;
     }
 }
 
@@ -70,9 +71,10 @@ void C610_CAN_CallBack(void *message, BusSubscriberHandle_t subscriber) {
         return;
     }
     INTF_Motor_HandleTypeDef *m = g_c610_motors[buffer_id][id];
+    C610_ResDataTypeDef *priv = m->private_data;
 
     // 确认电机在正常运行
-    if (m->motor_state != MOTOR_STATE_RUNNING) {
+    if (m->motor_state != MOTOR_STATE_RUNNING && m->motor_state != MOTOR_STATE_DISABLE) {
         m->motor_state = MOTOR_STATE_RUNNING;
     }
 
@@ -90,7 +92,6 @@ void C610_CAN_CallBack(void *message, BusSubscriberHandle_t subscriber) {
                                        m->direction,
                                    0.9f);  // Nm
 
-    C610_ResDataTypeDef *priv = m->private_data;
     if (ecd - priv->last_ecd > 4096)
         priv->total_rounds--;
     else if (ecd - priv->last_ecd < -4096)
@@ -109,9 +110,6 @@ void C610_PIDCalc() {
             if (m == NULL) {
                 continue;
             }
-            if (m->motor_state != MOTOR_STATE_RUNNING) {
-                continue;  // 确认电机在正常运行
-            }
 
             // 电机离线检测
             if (HAL_GetTick() - m->update_time > 30) {
@@ -120,6 +118,14 @@ void C610_PIDCalc() {
 
             float PID_out = 0;  // 临时存放PID的输出
             C610_ResDataTypeDef *priv = m->private_data;
+
+            if (m->motor_id == MOTOR_STATE_DISABLE) {
+                // C610_SetCurrent(i + 1, 0, priv->can_tx_topic);
+            }
+
+            if (m->motor_state != MOTOR_STATE_RUNNING && m->motor_state != MOTOR_STATE_DISABLE) {
+                continue;  // 确认电机在正常运行
+            }
 
             switch (m->motor_mode) {
             case MOTOR_MODE_ANGLE:
@@ -174,11 +180,20 @@ void C610_SetSpeed_t(struct INTF_Motor_Handle *self, float speed) {
 }
 
 void C610_SetAngle_t(struct INTF_Motor_Handle *self, float angle) {
-    self->target_angle = angle;
+    C610_ResDataTypeDef *priv = self->private_data;
+    self->target_angle = angle + priv->offset_angle;
 }
 
 void C610_SetTorque_t(struct INTF_Motor_Handle *self, float torque) {
     self->target_torque = torque;
+}
+
+void C610_Disable_t(struct INTF_Motor_Handle *self) {
+    self->motor_state = MOTOR_STATE_DISABLE;
+}
+
+void C610_Enable_t(struct INTF_Motor_Handle *self) {
+    self->motor_state = MOTOR_STATE_INIT;
 }
 
 #ifdef C610_USE_MANAGER
@@ -245,6 +260,8 @@ INTF_Motor_HandleTypeDef *C610_Register(C610_ConfigTypeDef *config) {
     motor->set_speed = C610_SetSpeed_t;
     motor->set_angle = C610_SetAngle_t;
     motor->set_torque = C610_SetTorque_t;
+    motor->disable = C610_Disable_t;
+    motor->enable = C610_Enable_t;
 
     for (int i = 0; i < GM_BUFFER_NUM; ++i) {
         if (GM_Buffer[i].can_tx_topic == priv->can_tx_topic) {

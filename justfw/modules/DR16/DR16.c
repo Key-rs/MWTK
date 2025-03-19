@@ -70,9 +70,10 @@ static void DR16_solve(const uint8_t *sbus_buf) {
     vBusPublish(g_dr16_signal_updated, NULL);
 
     // DaemonReload(g_rc_daemon_instance);  // 重载守护进程(检查遥控器是否正常工作
+    rc_ctrl[TEMP].sn += 1;
 }
 
-void DR16_RX_CallBack(void *message, BusTopicHandle_t topic) {
+void DR16_RX_CallBack(void *message, BusSubscriberHandle_t subscriber) {
     INTF_Serial_MessageTypeDef *msg = (INTF_Serial_MessageTypeDef *)message;
     if (msg->len != 18) {
         return;  // 长度不对，丢包
@@ -90,15 +91,6 @@ void RCLostCallback(void *id) {
 
 void DR16_Init() {
     rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
-
-    // // 进行守护进程的注册,用于定时检查遥控器是否正常工作
-    // Daemon_Init_Config_s daemon_conf = {
-    //     .reload_count = 100,  // 100ms未收到数据视为离线,遥控器的接收频率实际上是1000/14Hz(大约70Hz)
-    //     .callback = RCLostCallback,
-    //     .owner_id = NULL,  // 只有1个遥控器,不需要owner_id
-    // };
-    // g_rc_daemon_instance = DaemonRegister(&daemon_conf);
-
     // g_dr16_rx = Bus_SubscribeFromName("/DBUS/RX",DR16_RX_CallBack);  // 串口遥控器
     g_dr16_rx = xBusSubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
 

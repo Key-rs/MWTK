@@ -44,6 +44,7 @@ typedef struct {
     char* motor_name;
     float angle_offset;
     float direction;
+
     char* can_rx_topic_name;
     char* can_tx_topic_name;
     float kp;  // 运控模式kp

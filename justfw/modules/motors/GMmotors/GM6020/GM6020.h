@@ -46,6 +46,4 @@ typedef struct GM6020_ResData {
     float torque_feed_forward;  // 力矩环前馈参数
 } GM6020_ResDataTypeDef;
 
-void GM6020_PIDCalc();
-
 #endif

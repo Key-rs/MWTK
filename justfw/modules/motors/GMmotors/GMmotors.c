@@ -28,6 +28,10 @@ void GM_ControlSend() {
 void GM_MainLoop() {
     vTaskDelay(pdMS_TO_TICKS(2000));  // 等待电机启动
     while (1) {
+        extern void C610_PIDCalc();
+        extern void C620_PIDCalc();
+        extern void GM6020_PIDCalc();
+
         C620_PIDCalc();
         C610_PIDCalc();
         GM6020_PIDCalc();

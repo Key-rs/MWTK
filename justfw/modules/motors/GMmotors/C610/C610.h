@@ -42,5 +42,8 @@ typedef struct C610_ResData {
     float torque_feed_forward;  // 力矩环前馈参数
 } C610_ResDataTypeDef;
 
-void C610_PIDCalc();
+int16_t C610_Torque2Current(float torque);
+INTF_Motor_HandleTypeDef *C610_Register(C610_ConfigTypeDef *config);
+
+// void C610_PIDCalc();
 #endif

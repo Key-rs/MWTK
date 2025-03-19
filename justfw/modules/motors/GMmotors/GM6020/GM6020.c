@@ -110,6 +110,14 @@ void GM6020_SetTorque_t(struct INTF_Motor_Handle *self, float torque) {
     self->target_torque = torque;
 }
 
+void GM6020_Disable_t(struct INTF_Motor_Handle *self) {
+    self->motor_state = MOTOR_STATE_DISABLE;
+}
+
+void GM6020_Enable_t(struct INTF_Motor_Handle *self) {
+    self->motor_state = MOTOR_STATE_RUNNING;
+}
+
 #ifdef GM6020_USE_MANAGER
 #include <stdio.h>
 
@@ -175,6 +183,8 @@ INTF_Motor_HandleTypeDef *GM6020_Register(GM6020_ConfigTypeDef *config) {
     motor->set_speed = GM6020_SetSpeed_t;
     motor->set_angle = GM6020_SetAngle_t;
     motor->set_torque = GM6020_SetTorque_t;
+    motor->disable = GM6020_Disable_t;
+    motor->enable = GM6020_Enable_t;
 
     for (int i = 0; i < GM_BUFFER_NUM; ++i) {
         if (GM_Buffer[i].can_tx_topic == priv->can_tx_topic) {
