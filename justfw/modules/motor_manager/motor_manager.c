@@ -203,7 +203,7 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
                 } else if (strcmp(param[3], "speed") == 0) {
                     m->set_mode(m, MOTOR_MODE_SPEED);
                 } else if (strcmp(param[3], "torque") == 0) {
-                    m->set_mode(param[3], MOTOR_MODE_TORQUE);
+                    m->set_mode(m, MOTOR_MODE_TORQUE);
                 } else
                     goto err_use;
             }

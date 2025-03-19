@@ -20,6 +20,7 @@ static void motor_clear_err(INTF_Motor_HandleTypeDef *self) {
 }
 
 static void motor_enable(INTF_Motor_HandleTypeDef *self) {
+    motor_clear_err(self);
     INTF_CAN_MessageTypeDef msg;
     Odrive_CAN_ResDataTypedef *priv = self->private_data;
     msg.rtr_type = CAN_RTR_DATA;
@@ -131,11 +132,22 @@ static void can_callback(void *message, BusSubscriberHandle_t subscriber) {
         priv->life = msg->data[7];
         break;
 
-    case 0x09:
-        // 电机位置包
-        m->real_angle = *(float *)(&msg->data[0]);
-        m->real_speed = *(float *)(&msg->data[4]);
+    case 0x08:
+        // MIT接收包
+        uint16_t position = msg->data[1] << 8 | msg->data[2];
+        uint16_t speed = msg->data[3] << 8 | (msg->data[4] & 0xF0) >> 4;
+        uint16_t torque = (msg->data[4] & 0xF) << 8 | msg->data[5];
+
+        m->real_angle = position * 25.0f / 65535.0f - 12.5;
+        m->real_speed = speed * 130.0f / 4095.0f - 65;
+        m->real_torque = torque * 100.0f / 4095.0f - 50;
         break;
+
+        // case 0x09:
+        //     // 电机位置包
+        //     // m->real_angle = *(float *)(&msg->data[0]);
+        //     // m->real_speed = *(float *)(&msg->data[4]);
+        //     break;
 
     default:
         break;
@@ -146,6 +158,8 @@ static void can_callback(void *message, BusSubscriberHandle_t subscriber) {
 
     if (priv->axis_status == 0x08) {
         m->motor_state = MOTOR_STATE_RUNNING;
+    } else {
+        m->motor_state = MOTOR_STATE_INIT;
     }
 }
 
@@ -158,32 +172,51 @@ static void odrive_mainLoop() {
             INTF_Motor_HandleTypeDef *m = listGET_LIST_ITEM_OWNER(item);
             Odrive_CAN_ResDataTypedef *priv = m->private_data;
 
-            if (priv->error != false) {
-                // 出现异常
-                motor_disable(m);
-                m->motor_state = MOTOR_STATE_ERROR;
-                vTaskDelay(pdMS_TO_TICKS(10));
-                motor_clear_err(m);
-            }
+            // if (priv->error != false) {
+            //     // 出现异常
+            //     motor_disable(m);
+            //     m->motor_state = MOTOR_STATE_ERROR;
+            //     vTaskDelay(pdMS_TO_TICKS(10));
+            //     motor_clear_err(m);
+            // }
 
-            if (m->motor_state == MOTOR_STATE_INIT) {
-                motor_clear_err(m);
-                vTaskDelay(pdMS_TO_TICKS(10));
-                motor_enable(m);
-                // m->motor_state = MOTOR_STATE_RUNNING;
-            }
+            // if (m->motor_state == MOTOR_STATE_INIT) {
+            //     motor_clear_err(m);
+            //     vTaskDelay(pdMS_TO_TICKS(10));
+            //     motor_enable(m);
+            //     // m->motor_state = MOTOR_STATE_RUNNING;
+            // }
 
-            if (m->motor_state == MOTOR_STATE_RUNNING && priv->axis_status != 0x08) {
-                m->motor_state = MOTOR_STATE_INIT;
-            }
+            // if (m->motor_state == MOTOR_STATE_RUNNING && priv->axis_status != 0x08) {
+            //     m->motor_state = MOTOR_STATE_INIT;
+            // }
 
-            if (m->motor_state == MOTOR_STATE_RUNNING) {
-                // (void)motor_send_mit;   // 简直就是一坨
-                // motor_send_mit_cmd(m);  // 无法直接设置Kp Ki Kd值，但是可以正常使用
+            // if (m->motor_state == MOTOR_STATE_RUNNING) {
+            //     // (void)motor_send_mit;   // 简直就是一坨
+            //     // motor_send_mit_cmd(m);  // 无法直接设置Kp Ki Kd值，但是可以正常使用
+            //     motor_send_mit(m);
+            // }
+            // if (m->motor_state == MOTOR_STATE_RUNNING && priv->axis_status != 0x08) {
+            //     m->motor_state = MOTOR_STATE_INIT;
+            // }
+
+            // switch (m->motor_state) {
+            // case MOTOR_STATE_INIT:
+            //     motor_clear_err(m);
+            //     vTaskDelay(10);
+            //     motor_enable(m);
+            //     break;
+
+            // default:
+            //     break;
+            // }
+
+            if (m->motor_state != MOTOR_STATE_DISABLE) {
                 motor_send_mit(m);
             }
 
             item = listGET_NEXT(item);
+            vTaskDelay(20);
         }
 
         vTaskDelay(pdMS_TO_TICKS(1));
@@ -222,6 +255,9 @@ INTF_Motor_HandleTypeDef *Odrive_Register(Odrive_CAN_ConfigTypedef *config) {
     m->motor_id = config->motor_id;
     m->private_data = priv;
     m->motor_mode = MOTOR_MODE_MIT;
+    m->target_angle = 0;
+    m->target_speed = 0;
+    m->target_torque = 0;
 
     m->set_angle = motor_set_angle;
     m->set_speed = motor_set_speed;

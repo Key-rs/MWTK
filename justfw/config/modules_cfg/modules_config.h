@@ -4,5 +4,6 @@
 #define USE_STEADYWIN_MIT_DRIVER
 #define USE_ODRIVE_CAN_DRIVER
 #define USE_GM_MOTOR_DRIVER
+#define USE_STEADYWIN_ODIRVE_MIT_DRIVER  // 傻逼思泰威，出生中的出生
 
 #endif

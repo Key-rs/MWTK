@@ -172,7 +172,7 @@ void Engin_Little_Hande_Motor_Init() {
         .motor_id = 2,  // 思泰威电机，不会影响C610
         .can_rx_topic_name = "/CAN2/RX",
         .can_tx_topic_name = "/CAN2/TX",
-        .kp = 0.0000f,
+        .kp = 10.0f,
         .kd = 1.0f,
         .motor_name = "/motor/r_joint1"};
     m_r_joint1 = Odrive_Register(&config_r);

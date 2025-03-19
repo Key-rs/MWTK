@@ -108,7 +108,7 @@ static void motor_send_mit(INTF_Motor_HandleTypeDef* self) {
     msg.data[3] = (kp >> 8 & 0x0F) | (int_speed & 0x0F) << 4;
     msg.data[4] = kp & 0xFF;
     msg.data[5] = kd >> 4;
-    msg.data[6] = ((kd << 4) & 0x0F) | ((torque >> 8) & 0xF0);
+    msg.data[6] = ((kd << 4) & 0xF0) | ((torque >> 8) & 0x0F);
     msg.data[7] = torque & 0xFF;
 
     vBusPublish(priv->can_tx_topic, &msg);
