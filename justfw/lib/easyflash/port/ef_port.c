@@ -140,7 +140,9 @@ static const ef_env default_env_set[] = {
  * @return result
  */
 EfErrCode ef_port_init(ef_env const **default_env, size_t *default_env_size) {
+#ifdef USE_BOARD_C
     (void)STMFLASH_ReadWord;
+#endif
     EfErrCode result = EF_NO_ERR;
     xEfPortMutex = xSemaphoreCreateMutex();
 
