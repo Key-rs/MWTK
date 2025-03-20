@@ -4,6 +4,8 @@
 
 #include "BSP_CAN.h"
 
+#include "justfw_cfg.h"
+
 extern CAN_HandleTypeDef hcan1, hcan2;
 
 BusSubscriberHandle_t g_bsp_can1_tx,
@@ -101,8 +103,15 @@ void BSP_CAN_Transmit(uint8_t *data, INTF_CAN_ID_Type idType, INTF_CAN_RTR_Type 
 
     static uint8_t count = 0;
     count++;
-    if (count == 0xFF)
+    if (count == 0xFF) {
+#ifdef USE_BOARD_D
         HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+#endif
+
+#ifdef USE_BOARD_C
+        HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_10);
+#endif
+    }
 }
 
 /**

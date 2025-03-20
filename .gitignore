@@ -37,10 +37,15 @@ cmake_install.cmake
 CMakeCache.txt
 CMakePresets.json
 compile_commands.json
+
 startup_stm32f446xx.s
 STM32F446RCTx_FLASH.ld
+
+startup_stm32f407xx.s
+STM32F407IGHx_FLASH.ld
 
 cmake
 CMakeFiles
 
 justfw/modules/logic/test/
+

@@ -29,6 +29,8 @@
 #ifndef EF_CFG_H_
 #define EF_CFG_H_
 
+#include "justfw_cfg.h"
+
 /* using ENV function, default is NG (Next Generation) mode start from V4.0 */
 #define EF_USING_ENV
 
@@ -54,7 +56,15 @@
 #define EF_USING_LOG
 
 /* The minimum size of flash erasure. May be a flash sector size. */
-#define EF_ERASE_MIN_SIZE 4096 /* @note you must define it for a value */
+// #define EF_ERASE_MIN_SIZE 4096 /* @note you must define it for a value */
+
+#ifdef USE_BOARD_D
+#define EF_ERASE_MIN_SIZE 4096
+#endif
+
+#ifdef USE_BOARD_C
+#define EF_ERASE_MIN_SIZE (128 * 1024) /* @note you must define it for a value */
+#endif
 
 /* the flash write granularity, unit: bit
  * only support 1(nor flash)/ 8(stm32f4)/ 32(stm32f1) */
@@ -82,13 +92,28 @@
  */
 
 /* backup area start address */
+#ifdef USE_BOARD_D
 #define EF_START_ADDR 0x0 /* @note you must define it for a value */
+#endif
 
+#ifdef USE_BOARD_C
+#define EF_START_ADDR (FLASH_BASE + 512 * 1024) /* @note you must define it for a value */
+#endif
 /* ENV area size. It's at least one empty sector for GC. So it's definition must more then or equal 2 flash sector size. */
+
+#ifdef USE_BOARD_D
 #define ENV_AREA_SIZE (EF_ERASE_MIN_SIZE * 256)  // 1MB/* @note you must define it for a value if you used ENV */
 
 /* saved log area size */
 #define LOG_AREA_SIZE (EF_ERASE_MIN_SIZE * 256)  // 1MB/* @note you must define it for a value if you used log */
+#endif
+
+#ifdef USE_BOARD_C
+/* ENV area size. It's at least one empty sector for GC. So it's definition must more then or equal 2 flash sector size. */
+#define ENV_AREA_SIZE (2 * EF_ERASE_MIN_SIZE) /* @note you must define it for a value if you used ENV */
+/* saved log area size */
+#define LOG_AREA_SIZE (2 * EF_ERASE_MIN_SIZE) /* @note you must define it for a value if you used log */
+#endif
 
 /* print debug information of flash */
 #define PRINT_DEBUG

@@ -19,7 +19,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set the project name
-set(CMAKE_PROJECT_NAME JUSTOS)
+set(CMAKE_PROJECT_NAME JUSTC)
 
 # Include toolchain file
 include("cmake/gcc-arm-none-eabi.cmake")
@@ -51,9 +51,9 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 
+
 # 添加 justfw 子目录
 add_subdirectory(justfw)
-
 
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -81,4 +81,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
     # Add user defined libraries
     justFW
+     
 )

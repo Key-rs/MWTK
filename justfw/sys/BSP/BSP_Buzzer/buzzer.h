@@ -1,11 +1,19 @@
 #ifndef __BUZZER_H
 #define __BUZZER_H
 #include "interface.h"
+#include "justfw_cfg.h"
 
+#ifdef USE_BOARD_D
 #define BUZZER_TIM htim2
 #define BUZZER_TIM_CHENNEL TIM_CHANNEL_4
+#endif
 
-extern TIM_HandleTypeDef htim2;
+#ifdef USE_BOARD_C
+#define BUZZER_TIM htim4
+#define BUZZER_TIM_CHENNEL TIM_CHANNEL_3
+#endif
+
+extern TIM_HandleTypeDef BUZZER_TIM;
 
 typedef struct Node_PWM_Config {
     uint8_t precaler;

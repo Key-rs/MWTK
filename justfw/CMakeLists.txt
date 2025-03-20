@@ -29,6 +29,8 @@ file(GLOB_RECURSE JUSTFW_SOURCES
   "app/*.h"
 )
 
+add_definitions(-DARM_MATH_CM4)
+
 # 打印 INCLUDES 变量
 # message(STATUS "JUSTFW_SOURCES: ${JUSTFW_SOURCES}")
 

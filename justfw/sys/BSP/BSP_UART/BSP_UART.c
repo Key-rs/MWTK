@@ -5,6 +5,7 @@
 
 #include "BSP_UART_cfg.h"
 #include "intf_sys.h"
+#include "justfw_cfg.h"
 
 /*
 应用 -> TX 缓冲区(数据流) -> 串口发送
@@ -79,12 +80,15 @@ UART_InstanceTypeDef *BSP_UART_Register(UART_InstanceConfigTypeDef *config) {
 
     instance->rx_buffer = xSharedStreamCreate(instance->recv_buff_size);
     vSharePtrStatic(config->rx_buffer_name, instance->rx_buffer);  // 共享静态共享缓冲区
-    instance->tx_buffer = xStreamCreate(config->tx_buff_size);
-    vSharePtrStatic(config->tx_buffer_name, instance->tx_buffer);
 
-    instance->tx_listener = xStreamListenerCreate(instance->tx_buffer);
-    instance->tx_listener->pvOnDataReceived = UART_TX_CallBack;
-    instance->tx_listener->pvContext = instance;
+    if (config->tx_buff_size > 0) {
+        instance->tx_buffer = xStreamCreate(config->tx_buff_size);
+        vSharePtrStatic(config->tx_buffer_name, instance->tx_buffer);
+
+        instance->tx_listener = xStreamListenerCreate(instance->tx_buffer);
+        instance->tx_listener->pvOnDataReceived = UART_TX_CallBack;
+        instance->tx_listener->pvContext = instance;
+    }
 
     if (config->tx_topic_name != NULL) {
         // 启用TX Bus消息监听
@@ -165,6 +169,8 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 }
 
 void BSP_UART_Init() {
+#ifdef USE_BOARD_D
+
     extern UART_HandleTypeDef huart1;
     UART_InstanceConfigTypeDef uart1_config = {
         .UART_handle = &huart1,
@@ -218,4 +224,32 @@ void BSP_UART_Init() {
 
     };
     BSP_UART_Register(&uart5_config);
+#endif
+
+#ifdef USE_BOARD_C
+    extern UART_HandleTypeDef huart1;
+    UART_InstanceConfigTypeDef uart1_config = {
+        .UART_handle = &huart1,
+        .recv_buff_size = 50,
+        .tx_topic_name = "/UART/TEST_TX",
+        .rx_topic_name = "/UART/TEST_RX"};
+    BSP_UART_Register(&uart1_config);
+
+    extern UART_HandleTypeDef huart3;
+
+    UART_InstanceConfigTypeDef uart3_config = {
+        .UART_handle = &huart3,
+        .recv_buff_size = 18,
+        // .tx_topic_name = "/DBUS/TX",
+        .rx_topic_name = "/DBUS/RX"};
+    BSP_UART_Register(&uart3_config);
+
+    extern UART_HandleTypeDef huart6;
+    UART_InstanceConfigTypeDef uart6_config = {
+        .UART_handle = &huart6,
+        .recv_buff_size = 255,
+        .tx_topic_name = "/REFEREE/TX",
+        .rx_topic_name = "/REFEREE/RX"};
+    BSP_UART_Register(&uart6_config);
+#endif
 }

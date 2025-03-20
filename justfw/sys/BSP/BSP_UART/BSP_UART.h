@@ -12,7 +12,13 @@
 #include "stdlib.h"
 #include "tinybus.h"
 
-#define DEVICE_UART_CNT 4      // D板支持4个串口
+#ifdef USE_BOARD_D
+#define DEVICE_UART_CNT 4  // D板支持4个串口
+#endif
+#ifdef USE_BOARD_C
+#define DEVICE_UART_CNT 3
+#endif
+
 #define UART_RXBUFF_LIMIT 256  // 如果协议需要更大的buff,请修改这里
 
 typedef struct UART_InstanceConfig {
