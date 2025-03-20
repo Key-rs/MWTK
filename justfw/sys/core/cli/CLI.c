@@ -32,6 +32,15 @@ const char *welecon_tips[] = {
     "我看你!",
 };
 
+const char *welecon_tips[] = {
+    // "Life is Short, I use python!",
+    "糖师傅糖丸了",
+    "粥文洋你完了",
+    "吓爆了哟！",
+    "想逃？",
+    "我看你!",
+    "肖学姐的沟"};
+
 void cli_on_start() {
     // USB_Printf("Hello!\nJUSTOS v0.1\n>");
     // 这里展示欢迎信息
@@ -47,8 +56,10 @@ void cli_on_start() {
 
     printf("\n");
     printf("Welecome use justos!\n");
-    printf("System Version: " SYS_VERSION "PlantFrom:" PLATFROM "\n\n");
-    printf("Tpis:%s\n", welecon_tips[HAL_GetTick() % sizeof(welecon_tips)]);
+    printf("Projuect:https://gitee.com/justrm/justos\n");
+    printf("System Version: " SYS_VERSION "  PlantFrom:" PLATFROM "\n");
+    uint8_t welecon_index = HAL_GetTick() % (sizeof(welecon_tips) / sizeof(welecon_tips[0]));
+    printf("Tpis:%s\n\n", welecon_tips[welecon_index]);
     printf(">");
 }
 
