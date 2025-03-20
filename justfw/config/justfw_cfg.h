@@ -6,10 +6,11 @@
 
 #ifdef STM32F407xx
 #define USE_BOARD_C  // 使用C板
-
+#define PLATFROM "C Board"
 #endif
 
 #ifdef STM32F446xx
+#define PLATFROM "D Board"
 #define USE_BOARD_D  // 使用D板
 
 #endif

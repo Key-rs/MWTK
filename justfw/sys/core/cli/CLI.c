@@ -23,6 +23,15 @@ static char cInputString[cmdMAX_INPUT_SIZE];
 
 static StreamBufferHandle_t stream_cli_input;
 
+const char *welecon_tips[] = {
+    // "Life is Short, I use python!",
+    "糖师傅糖丸了",
+    "粥文洋你完了",
+    "吓爆了哟！",
+    "想逃？",
+    "我看你!",
+};
+
 void cli_on_start() {
     // USB_Printf("Hello!\nJUSTOS v0.1\n>");
     // 这里展示欢迎信息
@@ -38,7 +47,8 @@ void cli_on_start() {
 
     printf("\n");
     printf("Welecome use justos!\n");
-    printf("System Version: " SYS_VERSION "\n\n");
+    printf("System Version: " SYS_VERSION "PlantFrom:" PLATFROM "\n\n");
+    printf("Tpis:%s\n", welecon_tips[HAL_GetTick() % sizeof(welecon_tips)]);
     printf(">");
 }
 
