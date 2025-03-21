@@ -5,7 +5,6 @@
 #ifndef JUSTFW_INTF_CHASSIS_H
 #define JUSTFW_INTF_CHASSIS_H
 
-
 #include "stdint.h"
 
 /*
@@ -14,7 +13,7 @@
  * |     x
  * ------>
  */
-typedef struct INTF_Chassis_Handle{
+typedef struct INTF_Chassis_Handle {
     float target_speed_x;
     float target_speed_y;
     float target_speed_w;
@@ -29,13 +28,9 @@ typedef struct INTF_Chassis_Handle{
      * @param speed_y 欲设置的底盘y轴速度（m/s）
      * @param speed_w 欲设置的底盘w轴速度（rad/s）
      */
-    void (*set_speed)(struct INTF_Chassis_Handle *self, float speed_x,float speed_y,float speed_w); //设置底盘速度
+    void (*set_speed)(struct INTF_Chassis_Handle *self, float speed_x, float speed_y, float speed_w);  // 设置底盘速度
 
     void *private_data;
-}INTF_Chassis_HandleTypeDef;
+} INTF_Chassis_HandleTypeDef;
 
-
-
-
-
-#endif //JUSTFW_INTF_CHASSIS_H
+#endif  // JUSTFW_INTF_CHASSIS_H

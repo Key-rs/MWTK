@@ -8,6 +8,18 @@ static uint32_t fac_ms = 0;
 void delay_init(void) {
     fac_us = SystemCoreClock / 1000000;
     fac_ms = SystemCoreClock / 1000;
+
+    // 禁用 SysTick
+    SysTick->CTRL = 0;
+
+    // 设置重装载值
+    SysTick->LOAD = 0xFFFFFF - 1;
+
+    // 设置当前值为 0
+    SysTick->VAL = 0;
+
+    // 启用 SysTick，使用处理器时钟，并启用中断
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk;
 }
 
 void delay_us(uint16_t nus) {

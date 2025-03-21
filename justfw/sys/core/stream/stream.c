@@ -41,7 +41,7 @@ static void Stream_ManagerLoop() {
             pItem = listGET_NEXT(pItem);
         }
 
-        vTaskDelay(pdMS_TO_TICKS(1));
+        vTaskDelay(pdMS_TO_TICKS(0));
     }
 }
 

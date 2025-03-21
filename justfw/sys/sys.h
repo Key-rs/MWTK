@@ -1,6 +1,8 @@
 #ifndef __SYS_H
 #define __SYS_H
 
+#include "justfw_cfg.h"
+//
 #include "BSP_CAN.h"
 #include "BSP_UART.h"
 #include "BSP_USB.h"
@@ -13,6 +15,10 @@
 #include "storage.h"
 #include "stream.h"
 #include "tinybus.h"
+
+#ifdef USE_BOARD_C
+#include "BSP_bmi088.h"
+#endif
 
 void Sys_Init();
 

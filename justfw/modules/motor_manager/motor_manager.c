@@ -155,13 +155,13 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
             m->disable(m);
             snprintf(pcWriteBuffer, xWriteBufferLen, GREEN "Success!\n\r" NC);
         } else if (strcmp(param[1], "apply") == 0) {
-            if (m->motor_state == MOTOR_STATE_RUNNING) {
-                snprintf(pcWriteBuffer, xWriteBufferLen, RED "Shutdonw the motor first!\n\r" NC);
-            } else {
-                if (managed_motor->ApplyControl != NULL)
-                    managed_motor->ApplyControl(managed_motor);
-                snprintf(pcWriteBuffer, xWriteBufferLen, GREEN "Success!\n\r" NC);
-            }
+            // if (m->motor_state == MOTOR_STATE_RUNNING) {
+            //     snprintf(pcWriteBuffer, xWriteBufferLen, RED "Shutdonw the motor first!\n\r" NC);
+            // } else {
+            if (managed_motor->ApplyControl != NULL)
+                managed_motor->ApplyControl(managed_motor);
+            snprintf(pcWriteBuffer, xWriteBufferLen, GREEN "Success!\n\r" NC);
+            // }
         } else if (strcmp(param[1], "monitor") == 0) {
             static StreamHandle_t console_input;
             if (console_input == NULL) {

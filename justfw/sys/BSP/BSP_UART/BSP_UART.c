@@ -239,7 +239,7 @@ void BSP_UART_Init() {
 
     UART_InstanceConfigTypeDef uart3_config = {
         .UART_handle = &huart3,
-        .recv_buff_size = 18,
+        .recv_buff_size = 50,
         // .tx_topic_name = "/DBUS/TX",
         .rx_topic_name = "/DBUS/RX"};
     BSP_UART_Register(&uart3_config);

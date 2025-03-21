@@ -24,22 +24,13 @@ static char cInputString[cmdMAX_INPUT_SIZE];
 static StreamBufferHandle_t stream_cli_input;
 
 const char *welecon_tips[] = {
-    // "Life is Short, I use python!",
     "糖师傅糖丸了",
     "粥文洋你完了",
     "吓爆了哟！",
     "想逃？",
     "我看你!",
-};
 
-const char *welecon_tips[] = {
-    // "Life is Short, I use python!",
-    "糖师傅糖丸了",
-    "粥文洋你完了",
-    "吓爆了哟！",
-    "想逃？",
-    "我看你!",
-    "肖学姐的沟"};
+};
 
 void cli_on_start() {
     // USB_Printf("Hello!\nJUSTOS v0.1\n>");
@@ -140,7 +131,7 @@ void CLI_Init() {
     // 对外共享命令行输入流，允许上层应用直接读取命令行输入流
     vSharePtrStatic(CLI_INPUT_STREAM, stream_cli_input);
 
-    xTaskCreate(CLI_MainLoop, "CLI_Task", 1024, NULL, 255, NULL);
+    xTaskCreate(CLI_MainLoop, "CLI_Task", 2048, NULL, 255, NULL);
 
     // xBusSubscribeFromName("USB_ON", on_start);
 }

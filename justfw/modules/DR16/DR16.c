@@ -71,6 +71,10 @@ static void DR16_solve(const uint8_t *sbus_buf) {
 
     // DaemonReload(g_rc_daemon_instance);  // 重载守护进程(检查遥控器是否正常工作
     rc_ctrl[TEMP].sn += 1;
+
+    if (rc_ctrl[TEMP].sn % 0xFF == 0) {
+        HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_11);
+    }
 }
 
 void DR16_RX_CallBack(void *message, BusSubscriberHandle_t subscriber) {
@@ -89,10 +93,67 @@ void RCLostCallback(void *id) {
     }
 }
 
+#include <stdio.h>
+
+#include "FreeRTOS_CLI.h"
+#include "console_cfg.h"
+#include "console_colors.h"
+
+static BaseType_t prvDR16Command(char *pcWriteBuffer,
+                                 size_t xWriteBufferLen,
+                                 const char *pcCommandString) {
+    BaseType_t xParameterStringLength, xReturn;
+
+    const char *param = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength);
+    if (strncmp(param, "info", 4) == 0) {
+        snprintf(pcWriteBuffer, xWriteBufferLen, "DR16:%d,%d,%d,%d\n",
+                 rc_ctrl[0].rc.rocker_l1,
+                 rc_ctrl[0].rc.rocker_l_,
+                 rc_ctrl[0].rc.rocker_r1,
+                 rc_ctrl[0].rc.rocker_l_);
+    } else if (strncmp(param, "monitor", 7) == 0) {
+        static StreamHandle_t console_input;
+        if (console_input == NULL) {
+            console_input = pvSreachSharedPtr(CLI_INPUT_STREAM);
+        }
+
+        if (console_input == NULL) {
+            snprintf(pcWriteBuffer, xWriteBufferLen, RED "Stream Error!\n\r" NC);
+
+            return pdFALSE;
+        }
+
+        while (true) {
+            char input;
+            if (xStreamRead(console_input, &input, 1, 0) && input == 0x03) {
+                return pdFALSE;
+            }
+
+            printf("DR16:%d,%d,%d,%d\n",
+                   rc_ctrl[0].rc.rocker_l1,
+                   rc_ctrl[0].rc.rocker_l_,
+                   rc_ctrl[0].rc.rocker_r1,
+                   rc_ctrl[0].rc.rocker_r_);
+
+            vTaskDelay(pdMS_TO_TICKS(20));
+        }
+    } else
+        snprintf(pcWriteBuffer, xWriteBufferLen, RED "Err USE!\n\r" NC);
+
+    return pdFALSE;
+}
+
+static const CLI_Command_Definition_t xDR16Command = {
+    "dr16",
+    "\n\n",
+    prvDR16Command,
+    1};
+
 void DR16_Init() {
+    FreeRTOS_CLIRegisterCommand(&xDR16Command);
     rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
-    // g_dr16_rx = Bus_SubscribeFromName("/DBUS/RX",DR16_RX_CallBack);  // 串口遥控器
-    g_dr16_rx = xBusSubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
+    g_dr16_rx = xBusSubscribeFromName("/DBUS/RX", DR16_RX_CallBack);  // 串口遥控器
+    // g_dr16_rx = xBusSubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
 
     // 遥控器事件
     g_dr16_signal_disconnected = xBusTopicRegister("/signal/DR16/disconnected");

@@ -10,6 +10,8 @@ static StreamBufferHandle_t stream;
 
 void Sys_Init() {
     __disable_irq();
+    DWT_Init(168);
+    delay_init();
 
     xBusInit();
     vSharedPtrInit();
@@ -20,8 +22,9 @@ void Sys_Init() {
     BSP_CAN_Init();
     Bsp_Buzzer_Init();
 
-    DWT_Init(168);
-    delay_init();
+#ifdef USE_BOARD_C
+    BSP_bmi088_Init();
+#endif
 
     CLI_Init();
     Storage_Init();
