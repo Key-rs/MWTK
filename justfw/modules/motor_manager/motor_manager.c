@@ -79,7 +79,27 @@ static BaseType_t prvMotorCommand(char* pcWriteBuffer,
             size_t str_offset = 0;
             while (item != listGET_END_MARKER(&managed_motors_list)) {
                 ITNF_ManagerdMotor_HandleTypedef* m = listGET_LIST_ITEM_OWNER(item);
-                str_offset += snprintf(pcWriteBuffer + str_offset, xWriteBufferLen, "%s\n", m->motor_name);
+                str_offset += snprintf(pcWriteBuffer + str_offset, xWriteBufferLen, "%s  ", m->motor_name);
+
+                switch (m->motor->motor_state) {
+                case MOTOR_STATE_DISABLE:
+                    str_offset += snprintf(pcWriteBuffer + str_offset, xWriteBufferLen, YELLOW "[DISABLED]" NC);
+                    break;
+                case MOTOR_STATE_RUNNING:
+                    str_offset += snprintf(pcWriteBuffer + str_offset, xWriteBufferLen, GREEN "[RUNNING]" NC);
+                    break;
+                case MOTOR_STATE_ERROR:
+                    str_offset += snprintf(pcWriteBuffer + str_offset, xWriteBufferLen, RED "[ERROR]" NC);
+                    break;
+                case MOTOR_STATE_STUCK:
+                    str_offset += snprintf(pcWriteBuffer + str_offset, xWriteBufferLen, RED "[STUCK]" NC);
+                    break;
+
+                default:
+                    break;
+                }
+
+                str_offset += snprintf(pcWriteBuffer + str_offset, xWriteBufferLen, "\n");
 
                 item = listGET_NEXT(item);
             }

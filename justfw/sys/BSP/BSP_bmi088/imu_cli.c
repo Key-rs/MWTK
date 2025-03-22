@@ -33,7 +33,7 @@ static BaseType_t prvIMUCommand(char* pcWriteBuffer,
                 return pdFALSE;
             }
 
-            printf(pcWriteBuffer, xWriteBufferLen, "IMU:%f,%f,%f\n", INS_angle[0], INS_angle[1], INS_angle[2]);
+            printf("IMU:%f,%f,%f\n", INS_angle[0], INS_angle[1], INS_angle[2]);
             vTaskDelay(pdMS_TO_TICKS(20));
         }
     } else

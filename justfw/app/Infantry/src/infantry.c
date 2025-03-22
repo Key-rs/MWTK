@@ -6,9 +6,9 @@
 
 #define USE_ROCKER
 
-#define CHASSIS_SPEED_X_MAX 10.0f
-#define CHASSIS_SPEED_Y_MAX 10.0f
-#define CHASSIS_SPEED_W_MAX 10.0f
+#define CHASSIS_SPEED_X_MAX 0.5f
+#define CHASSIS_SPEED_Y_MAX 0.5f
+#define CHASSIS_SPEED_W_MAX 0.5f
 
 static RC_ctrl_t *rc;
 static INTF_Chassis_HandleTypeDef *chassis;

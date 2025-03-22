@@ -35,7 +35,7 @@ static void RectifyRCjoystick() {
  * @retval         none
  */
 
-static void DR16_solve(const uint8_t *sbus_buf) {
+void DR16_solve(const uint8_t *sbus_buf) {
     // 遥控器连接signal
     if (!g_dr16_is_connected) {
         g_dr16_is_connected = 1;

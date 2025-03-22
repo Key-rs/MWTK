@@ -10,7 +10,7 @@
 #include "FreeRTOS_CLI.h"
 #include "console_cfg.h"
 #include "console_colors.h"
-#define STEP_ANGLE 0.01f
+// #define STEP_ANGLE 0.01f
 
 extern float INS_angle[3];
 extern float INS_SUM_angle[3];
@@ -40,49 +40,79 @@ static bool is_ready() {
 }
 
 static void loop() {
-    while (is_ready() != true) {
-        vTaskDelay(100);
-        continue;
-    }
-
-    if (g_gimbal->state == GIMBAL_INIT) {
-        m_yaw->set_mode(m_yaw, MOTOR_MODE_SPEED);
-        float d_angle = g_gimbal->mode == GIMBAL_MODE_NORMAL ? m_yaw->real_angle : GIMBAL_YAW;
-        uint32_t count = fabs(d_angle) / STEP_ANGLE;
-
-        float dt_angle = STEP_ANGLE;
-        if (d_angle > 0)
-            dt_angle = -dt_angle;
-
-        for (uint32_t i = 0; i < count; i++) {
-            m_yaw->set_angle(m_yaw, m_yaw->target_angle + dt_angle);
-            vTaskDelay(1);
-        }
-    }
-
-    g_gimbal->state = GIMBAL_RUNNING;
-
-    if (g_gimbal->mode == GIMBAL_MODE_NORMAL) {
-        m_yaw->set_mode(m_yaw, MOTOR_MODE_ANGLE);
-    }
-
     while (true) {
-        switch (g_gimbal->mode) {
-        case GIMBAL_MODE_NORMAL:
-            g_gimbal->motor_yaw->set_angle(g_gimbal->motor_yaw, g_gimbal->target_yaw);
-            g_gimbal->real_yaw = g_gimbal->motor_yaw->real_angle;
+        switch (g_gimbal->state) {
+        case GIMBAL_INIT:
+            /* code */
+            // 等待电机上电
+            while (is_ready() != true) {
+                vTaskDelay(100);
+                continue;
+            }
+            while (HAL_GetTick() - g_gimbal->motor_yaw->update_time > 1000 ||
+                   HAL_GetTick() - g_gimbal->motor_pitch->update_time > 1000) {
+                vTaskDelay(1);
+            }
+
+            vTaskDelay(5000);
+
+            switch (g_gimbal->mode) {
+            case GIMBAL_MODE_NORMAL:
+                g_gimbal->real_pitch = g_gimbal->motor_pitch->real_angle;
+                g_gimbal->target_yaw = g_gimbal->real_yaw;
+                break;
+            case GIMBAL_MODE_FOLLOW_GYRO:
+                g_gimbal->real_yaw = GIMBAL_YAW;
+                g_gimbal->target_yaw = g_gimbal->real_yaw;
+                break;
+
+            default:
+                break;
+            }
+
+            if (g_gimbal->mode == GIMBAL_MODE_NORMAL) {
+                m_yaw->set_mode(m_yaw, MOTOR_MODE_ANGLE);
+            }
+
+            g_gimbal->state = GIMBAL_RUNNING;
             break;
 
-        case GIMBAL_MODE_FOLLOW_GYRO:
-            g_gimbal->real_yaw = GIMBAL_YAW;
-            g_gimbal->motor_yaw->set_speed(g_gimbal->motor_yaw, PIDCalculate(&gimbal_yaw_gyro_pid, -loop_float_constrain(g_gimbal->target_yaw - g_gimbal->real_yaw, -PI, PI), 0));
-            break;
+        case GIMBAL_RUNNING:
+            if (is_ready() != true) {
+                g_gimbal->state = GIMBAL_INIT;
+                continue;
+            }
+
+            switch (g_gimbal->mode) {
+            case GIMBAL_MODE_NORMAL:
+                g_gimbal->motor_yaw->set_angle(g_gimbal->motor_yaw, g_gimbal->target_yaw);
+                g_gimbal->real_yaw = g_gimbal->motor_yaw->real_angle;
+                break;
+
+            case GIMBAL_MODE_FOLLOW_GYRO:
+                g_gimbal->real_yaw = GIMBAL_YAW;
+                g_gimbal->motor_yaw->set_speed(g_gimbal->motor_yaw, PIDCalculate(&gimbal_yaw_gyro_pid, -loop_float_constrain(g_gimbal->target_yaw - g_gimbal->real_yaw, -PI, PI), 0));
+                break;
+            default:
+                break;
+            }
+
+            switch (g_gimbal->mode) {
+            case GIMBAL_MODE_NORMAL:
+                g_gimbal->real_pitch = g_gimbal->motor_pitch->real_angle;
+                break;
+
+            case GIMBAL_MODE_FOLLOW_GYRO:
+                g_gimbal->real_pitch = get_pitch_t();
+                break;
+
+            default:
+                break;
+            }
+            g_gimbal->motor_pitch->set_speed(g_gimbal->motor_pitch, PIDCalculate(&gimbal_pitch_gyro_pid, -loop_float_constrain(g_gimbal->target_pitch - g_gimbal->real_pitch, -PI, PI), 0));
         default:
             break;
         }
-
-        g_gimbal->real_pitch = get_pitch_t();
-        g_gimbal->motor_pitch->set_speed(g_gimbal->motor_pitch, PIDCalculate(&gimbal_pitch_gyro_pid, -loop_float_constrain(g_gimbal->target_pitch - g_gimbal->real_pitch, -PI, PI), 0));
 
         vTaskDelay(1);
     }
@@ -150,7 +180,8 @@ static BaseType_t prvChassisManager(char *pcWriteBuffer,
     const char *param = FreeRTOS_CLIGetParameter(pcCommandString, 1, &xParameterStringLength);
 
     if (strncmp(param, "info", 4) == 0) {
-        snprintf(pcWriteBuffer, xWriteBufferLen, "Gimbal:%f,%f,%f,%f\n",
+        snprintf(pcWriteBuffer, xWriteBufferLen, "Status:%s\nGimbal:%f,%f,%f,%f\n",
+                 g_gimbal->state == GIMBAL_INIT ? RED "Init" NC : GREEN "Running" NC,
                  m_pitch->real_angle,
                  m_yaw->real_angle,
                  g_gimbal->target_pitch,
@@ -166,19 +197,29 @@ static BaseType_t prvChassisManager(char *pcWriteBuffer,
 
             return pdFALSE;
         }
+        char input;
 
         while (true) {
-            char input;
+            switch (g_gimbal->state) {
+            case GIMBAL_INIT:
+                printf(RED "Gimbal Not Initialise!\n" NC);
+                vTaskDelay(100);
+                break;
+            case GIMBAL_RUNNING:
+
+                printf("Gimbal:%f,%f,%f,%f\n",
+                       m_pitch->real_angle,
+                       m_yaw->real_angle,
+                       g_gimbal->target_pitch,
+                       g_gimbal->real_yaw);
+                vTaskDelay(pdMS_TO_TICKS(20));
+
+            default:
+                break;
+            }
             if (xStreamRead(console_input, &input, 1, 0) && input == 0x03) {
                 return pdFALSE;
             }
-
-            printf("Gimbal:%f,%f,%f,%f\n",
-                   m_pitch->real_angle,
-                   m_yaw->real_angle,
-                   g_gimbal->target_pitch,
-                   g_gimbal->real_yaw);
-            vTaskDelay(pdMS_TO_TICKS(20));
         }
     } else if (strncmp(param, "set", 3) == 0) {
         const char *param = FreeRTOS_CLIGetParameter(pcCommandString, 2, &xParameterStringLength);
@@ -273,7 +314,7 @@ void Infantry_Gimbal_Init() {
         .motor_id = 3,  // 1
         .motor_ptr_name = "/motor/gimbal_pitch",
         .motor_mode = MOTOR_MODE_SPEED,
-        .direction = 1.0f,
+        .direction = -1.0f,
         .angle_offset = 3.2f,  // 对齐正前方
         .torque_feed_forward = 8000.0f,
         .angle_pid_config = &angle_pid2,
@@ -288,9 +329,9 @@ void Infantry_Gimbal_Init() {
     g_gimbal->mode = GIMBAL_MODE_NORMAL;
 
     PID_Init_Config_s gimbal_yaw_angle_config = {
-        .Kp = 40.0f,
+        .Kp = 20.0f,
         .Ki = 120.0f,
-        .Kd = 8.0f,
+        .Kd = 4.0f,
         .CoefB = 0.05f,
         .CoefA = 0.05f,
         .IntegralLimit = 200.0f,
@@ -300,9 +341,9 @@ void Infantry_Gimbal_Init() {
     PIDInit(&gimbal_yaw_gyro_pid, &gimbal_yaw_angle_config);
 
     PID_Init_Config_s gimbal_pitch_config = {
-        .Kp = 15.0f,
+        .Kp = 5.0f,
         .Ki = 0.0f,
-        .Kd = 0.0f,
+        .Kd = 0.1f,
         .MaxOut = 5.0f * RPM2RPS,
         .DeadBand = 0.0f,
         .Improve = PID_Integral_Limit,
@@ -311,7 +352,7 @@ void Infantry_Gimbal_Init() {
     PIDInit(&gimbal_pitch_gyro_pid, &gimbal_pitch_config);
 
     g_gimbal = pvSharePtr("gimbal", sizeof(INTF_Gimbal_HandleTypeDef));
-    g_gimbal->mode = GIMBAL_MODE_NORMAL;
+    g_gimbal->mode = GIMBAL_MODE_FOLLOW_GYRO;
     g_gimbal->motor_pitch = m_pitch;
     g_gimbal->motor_yaw = m_yaw;
 
