@@ -5,8 +5,10 @@
 #include "BSP_bmi088.h"
 
 #include "ist8310driver.h"
+#include "justfw_cfg.h"
 #include "stdio.h"
 
+#ifdef USE_BOARD_C
 extern TIM_HandleTypeDef htim10;
 #define IMU_temp_PWM(pwm) __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, pwm)  // pwm给定
 
@@ -452,3 +454,5 @@ void BSP_bmi088_Init() {
     // imuTaskHandle = osThreadCreate(osThread(imuTask), NULL);
     xTaskCreate((void (*)(void *))INS_task, "IMU", 256, NULL, 1, (TaskHandle_t *const)&imuTaskHandle);
 }
+
+#endif

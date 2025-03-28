@@ -9,7 +9,10 @@
 #include "gpio.h"
 #include "interface.h"
 #include "ist8310driver.h"
+#include "justfw_cfg.h"
 #include "main.h"
+
+#ifdef USE_BOARD_C
 
 // TaskHandle_t ist8310TaskHandle;
 TaskHandle_t const ist8310TaskHandle;
@@ -48,3 +51,5 @@ void BSP_ist8310_Init() {
 
     xTaskCreate(ist8310_task, "IST8310", 256, NULL, 1, (TaskHandle_t* const)&ist8310TaskHandle);
 }
+
+#endif
