@@ -17,6 +17,7 @@ MDK-ARM/
 # 忽略Clion相关文件
 cmake-build-debug/
 .idea/
+.cache/
 build
 
 # 忽略STM32CubeMX相关文件

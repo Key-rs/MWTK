@@ -21,6 +21,11 @@ void Modules_Init() {
     GM_Init();
 #endif
 
+#ifdef USE_BrushESC775_DRIVER
+    extern void BrushESC775_Init();
+    BrushESC775_Init();
+#endif
+
     MotorManager_Init();
 
     DR16_Init();
