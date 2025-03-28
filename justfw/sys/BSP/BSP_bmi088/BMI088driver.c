@@ -329,9 +329,9 @@ void BMI088_read_gyro_who_am_i(void) {
 
 void BMI088_read_accel_who_am_i(void) {
     volatile uint8_t buf;
-
     BMI088_accel_read_single_reg(BMI088_ACC_CHIP_ID, buf);
     buf = 0;
+    (void)buf;
 }
 
 void BMI088_temperature_read_over(uint8_t *rx_buf, float *temperate) {

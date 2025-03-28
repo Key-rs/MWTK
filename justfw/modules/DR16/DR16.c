@@ -72,9 +72,11 @@ void DR16_solve(const uint8_t *sbus_buf) {
     // DaemonReload(g_rc_daemon_instance);  // 重载守护进程(检查遥控器是否正常工作
     rc_ctrl[TEMP].sn += 1;
 
-    if (rc_ctrl[TEMP].sn % 0xFF == 0) {
+#ifdef USE_BOARD_C
+    if (rc_ctrl[TEMP].sn % 0x0F == 0) {
         HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_11);
     }
+#endif
 }
 
 void DR16_RX_CallBack(void *message, BusSubscriberHandle_t subscriber) {
