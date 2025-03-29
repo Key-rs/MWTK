@@ -24,13 +24,12 @@ static char cInputString[cmdMAX_INPUT_SIZE];
 static StreamBufferHandle_t stream_cli_input;
 
 const char *welecon_tips[] = {
-    "糖师傅糖丸了",
+    "🍬师傅🍬丸了",
     "粥文洋你完了",
     "吓爆了哟！",
     "想逃？",
     "我看你!",
-
-};
+    "肖学姐的沟🤤"};
 
 void cli_on_start() {
     // USB_Printf("Hello!\nJUSTOS v0.1\n>");

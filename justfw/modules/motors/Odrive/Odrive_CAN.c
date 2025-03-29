@@ -59,7 +59,6 @@ static void motor_set_torque(INTF_Motor_HandleTypeDef *self, float torque) {
     self->target_torque = torque;
 }
 
-/* 狗屎，狗都不用这个！ */
 static void motor_send_mit(INTF_Motor_HandleTypeDef *self) {
     Odrive_CAN_ResDataTypedef *priv = self->private_data;
     INTF_CAN_MessageTypeDef msg;

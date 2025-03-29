@@ -21,8 +21,15 @@ void Modules_Init() {
     GM_Init();
 #endif
 
+#ifdef USE_DM_MOTOR_DRIVER
+    extern void DM_Motor_Init();
+    DM_Motor_Init();
+
+#endif
+
 #ifdef USE_BrushESC775_DRIVER
-    extern void BrushESC775_Init();
+    extern void
+    BrushESC775_Init();
     BrushESC775_Init();
 #endif
 

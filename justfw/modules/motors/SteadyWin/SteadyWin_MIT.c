@@ -8,6 +8,7 @@ static INTF_Motor_HandleTypeDef* motors[STEADYWIN_MOTOR_MAX_NUM] = {0};
 
 #ifdef STEADYWIN_CAN_USE_MANAGER
 #include <stdio.h>
+
 static void apply_control(ITNF_ManagerdMotor_HandleTypedef* manager) {
     INTF_Motor_HandleTypeDef* m = manager->motor;
     SteadyWin_MIT_ResDataTypedef* priv = m->private_data;
@@ -21,7 +22,6 @@ static void print_info(ITNF_ManagerdMotor_HandleTypedef* manager, char* buff, ui
 
     snprintf(buff, len, "ErrorCode:%d\n\rParms kp:%f,kd:%f\n\r", priv->err, priv->kp, priv->kd);
 }
-
 #endif
 
 static void motor_can_msg_init(INTF_Motor_HandleTypeDef* self, INTF_CAN_MessageTypeDef* msg) {
