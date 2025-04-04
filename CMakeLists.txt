@@ -33,6 +33,7 @@ add_compile_options(-Wno-pedantic)              # 忽略 pedantic 警告
 add_compile_options(-Wno-sign-compare)          # 添加这一行来禁用 signedness 警告
 add_compile_options(-Wno-type-limits)
 add_compile_options(-Wno-switch)
+# add_compile_options(-Wno-Wmaybe-uninitialized)
 
 
 # 设置链接器选项

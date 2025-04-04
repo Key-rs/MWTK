@@ -5,8 +5,8 @@ void test_app_init() {
         .angle_offset = 0,
         .can_rx_topic_name = "/CAN1/RX",
         .can_tx_topic_name = "/CAN1/TX",
-        .kd = 0.2f,
-        .kp = 2.0f,
+        .kd = 0.4f,
+        .kp = 5.0f,
         .motor_id = 1,
         .motor_ptr_name = "test"};
     DM_Motor_Register(&config);
