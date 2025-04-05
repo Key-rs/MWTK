@@ -22,9 +22,7 @@ void Sys_Init() {
     BSP_CAN_Init();
     Bsp_Buzzer_Init();
 
-#ifdef USE_BOARD_C
     BSP_bmi088_Init();
-#endif
 
     CLI_Init();
     Storage_Init();

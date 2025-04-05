@@ -10,7 +10,22 @@
 
 #ifdef USE_BOARD_C
 extern TIM_HandleTypeDef htim10;
+
+#define HEAT_TIM_HANDLE htim10
+#define HEAT_TIM_CHANNEL TIM_CHANNEL_1
+
 #define IMU_temp_PWM(pwm) __HAL_TIM_SET_COMPARE(&htim10, TIM_CHANNEL_1, pwm)  // pwm给定
+#endif
+
+#ifdef USE_BOARD_D
+extern TIM_HandleTypeDef htim3;
+
+#define HEAT_TIM_HANDLE htim3
+#define HEAT_TIM_CHANNEL TIM_CHANNEL_2
+
+#define IMU_temp_PWM(pwm) __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm)  // pwm给定
+
+#endif
 
 /**
  * @brief          控制bmi088的温度
@@ -72,9 +87,9 @@ float INS_SUM_angle[3] = {0};    // 角度的累计值
 float INS_SUM_angle_N[3] = {0};  // 角度累计值的相反值
 //---------------------------------------
 
-extern SPI_HandleTypeDef hspi1;
-extern DMA_HandleTypeDef hdma_spi1_rx;
-extern DMA_HandleTypeDef hdma_spi1_tx;
+extern SPI_HandleTypeDef BMI088_SPI_HANDLE;
+extern DMA_HandleTypeDef BMI088_SPI_DMA_RX_HANDLE;
+extern DMA_HandleTypeDef BMI088_SPI_DMA_TX_HANDLE;
 
 static void toEulerAngle(const float q[4], float *roll, float *pitch, float *yaw) {
     // roll (x-axis rotation)
@@ -95,77 +110,275 @@ static void toEulerAngle(const float q[4], float *roll, float *pitch, float *yaw
     *yaw = atan2f(siny_cosp, cosy_cosp);
 }
 
-void SPI1_DMA_init(uint32_t tx_buf, uint32_t rx_buf, uint16_t num) {
-    SET_BIT(hspi1.Instance->CR2, SPI_CR2_TXDMAEN);
-    SET_BIT(hspi1.Instance->CR2, SPI_CR2_RXDMAEN);
+void BMI088_SPI_DMA_init(uint32_t tx_buf, uint32_t rx_buf, uint16_t num) {
+    SET_BIT(BMI088_SPI_HANDLE.Instance->CR2, SPI_CR2_TXDMAEN);
+    SET_BIT(BMI088_SPI_HANDLE.Instance->CR2, SPI_CR2_RXDMAEN);
 
-    __HAL_SPI_ENABLE(&hspi1);
-
-    // 失效DMA
-    __HAL_DMA_DISABLE(&hdma_spi1_rx);
-
-    while (hdma_spi1_rx.Instance->CR & DMA_SxCR_EN) {
-        __HAL_DMA_DISABLE(&hdma_spi1_rx);
-    }
-
-    __HAL_DMA_CLEAR_FLAG(&hdma_spi1_rx, DMA_LISR_TCIF2);
-
-    hdma_spi1_rx.Instance->PAR = (uint32_t)&(SPI1->DR);
-    // 内存缓冲区1
-    hdma_spi1_rx.Instance->M0AR = (uint32_t)(rx_buf);
-    // 数据长度
-    __HAL_DMA_SET_COUNTER(&hdma_spi1_rx, num);
-
-    __HAL_DMA_ENABLE_IT(&hdma_spi1_rx, DMA_IT_TC);
+    __HAL_SPI_ENABLE(&BMI088_SPI_HANDLE);
 
     // 失效DMA
-    __HAL_DMA_DISABLE(&hdma_spi1_tx);
+    __HAL_DMA_DISABLE(&BMI088_SPI_DMA_RX_HANDLE);
 
-    while (hdma_spi1_tx.Instance->CR & DMA_SxCR_EN) {
-        __HAL_DMA_DISABLE(&hdma_spi1_tx);
+    while (BMI088_SPI_DMA_RX_HANDLE.Instance->CR & DMA_SxCR_EN) {
+        __HAL_DMA_DISABLE(&BMI088_SPI_DMA_RX_HANDLE);
     }
 
-    __HAL_DMA_CLEAR_FLAG(&hdma_spi1_tx, DMA_LISR_TCIF3);
+    __HAL_DMA_CLEAR_FLAG(&BMI088_SPI_DMA_RX_HANDLE, DMA_LISR_TCIF2);
 
-    hdma_spi1_tx.Instance->PAR = (uint32_t)&(SPI1->DR);
+    BMI088_SPI_DMA_RX_HANDLE.Instance->PAR = (uint32_t)&(BMI088_SPI_HANDLE.Instance->DR);
     // 内存缓冲区1
-    hdma_spi1_tx.Instance->M0AR = (uint32_t)(tx_buf);
+    BMI088_SPI_DMA_RX_HANDLE.Instance->M0AR = (uint32_t)(rx_buf);
     // 数据长度
-    __HAL_DMA_SET_COUNTER(&hdma_spi1_tx, num);
+    __HAL_DMA_SET_COUNTER(&BMI088_SPI_DMA_RX_HANDLE, num);
+
+    __HAL_DMA_ENABLE_IT(&BMI088_SPI_DMA_RX_HANDLE, DMA_IT_TC);
+
+    // 失效DMA
+    __HAL_DMA_DISABLE(&BMI088_SPI_DMA_TX_HANDLE);
+
+    while (BMI088_SPI_DMA_TX_HANDLE.Instance->CR & DMA_SxCR_EN) {
+        __HAL_DMA_DISABLE(&BMI088_SPI_DMA_TX_HANDLE);
+    }
+
+    __HAL_DMA_CLEAR_FLAG(&BMI088_SPI_DMA_TX_HANDLE, DMA_LISR_TCIF3);
+
+    BMI088_SPI_DMA_TX_HANDLE.Instance->PAR = (uint32_t)&(BMI088_SPI_HANDLE.Instance->DR);
+    // 内存缓冲区1
+    BMI088_SPI_DMA_TX_HANDLE.Instance->M0AR = (uint32_t)(tx_buf);
+    // 数据长度
+    __HAL_DMA_SET_COUNTER(&BMI088_SPI_DMA_TX_HANDLE, num);
 }
 
-void SPI1_DMA_enable(uint32_t tx_buf, uint32_t rx_buf, uint16_t ndtr) {
+void BMI088_SPI_DMA_ENABLE(uint32_t tx_buf, uint32_t rx_buf, uint16_t ndtr) {
     // 失效DMA
-    __HAL_DMA_DISABLE(&hdma_spi1_rx);
-    __HAL_DMA_DISABLE(&hdma_spi1_tx);
-    while (hdma_spi1_rx.Instance->CR & DMA_SxCR_EN) {
-        __HAL_DMA_DISABLE(&hdma_spi1_rx);
+    __HAL_DMA_DISABLE(&BMI088_SPI_DMA_RX_HANDLE);
+    __HAL_DMA_DISABLE(&BMI088_SPI_DMA_TX_HANDLE);
+    while (BMI088_SPI_DMA_RX_HANDLE.Instance->CR & DMA_SxCR_EN) {
+        __HAL_DMA_DISABLE(&BMI088_SPI_DMA_RX_HANDLE);
     }
-    while (hdma_spi1_tx.Instance->CR & DMA_SxCR_EN) {
-        __HAL_DMA_DISABLE(&hdma_spi1_tx);
+    while (BMI088_SPI_DMA_TX_HANDLE.Instance->CR & DMA_SxCR_EN) {
+        __HAL_DMA_DISABLE(&BMI088_SPI_DMA_TX_HANDLE);
     }
     // 清除标志位
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(hspi1.hdmarx));
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmarx, __HAL_DMA_GET_HT_FLAG_INDEX(hspi1.hdmarx));
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmarx, __HAL_DMA_GET_TE_FLAG_INDEX(hspi1.hdmarx));
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmarx, __HAL_DMA_GET_DME_FLAG_INDEX(hspi1.hdmarx));
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmarx, __HAL_DMA_GET_FE_FLAG_INDEX(hspi1.hdmarx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_HT_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TE_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_DME_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_FE_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
 
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmatx, __HAL_DMA_GET_TC_FLAG_INDEX(hspi1.hdmatx));
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmatx, __HAL_DMA_GET_HT_FLAG_INDEX(hspi1.hdmatx));
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmatx, __HAL_DMA_GET_TE_FLAG_INDEX(hspi1.hdmatx));
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmatx, __HAL_DMA_GET_DME_FLAG_INDEX(hspi1.hdmatx));
-    __HAL_DMA_CLEAR_FLAG(hspi1.hdmatx, __HAL_DMA_GET_FE_FLAG_INDEX(hspi1.hdmatx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmatx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmatx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmatx, __HAL_DMA_GET_HT_FLAG_INDEX(BMI088_SPI_HANDLE.hdmatx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmatx, __HAL_DMA_GET_TE_FLAG_INDEX(BMI088_SPI_HANDLE.hdmatx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmatx, __HAL_DMA_GET_DME_FLAG_INDEX(BMI088_SPI_HANDLE.hdmatx));
+    __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmatx, __HAL_DMA_GET_FE_FLAG_INDEX(BMI088_SPI_HANDLE.hdmatx));
     // 设置数据地址
-    hdma_spi1_rx.Instance->M0AR = rx_buf;
-    hdma_spi1_tx.Instance->M0AR = tx_buf;
+    BMI088_SPI_DMA_RX_HANDLE.Instance->M0AR = rx_buf;
+    BMI088_SPI_DMA_TX_HANDLE.Instance->M0AR = tx_buf;
     // 设置数据长度
-    __HAL_DMA_SET_COUNTER(&hdma_spi1_rx, ndtr);
-    __HAL_DMA_SET_COUNTER(&hdma_spi1_tx, ndtr);
+    __HAL_DMA_SET_COUNTER(&BMI088_SPI_DMA_RX_HANDLE, ndtr);
+    __HAL_DMA_SET_COUNTER(&BMI088_SPI_DMA_TX_HANDLE, ndtr);
     // 使能DMA
-    __HAL_DMA_ENABLE(&hdma_spi1_rx);
-    __HAL_DMA_ENABLE(&hdma_spi1_tx);
+    __HAL_DMA_ENABLE(&BMI088_SPI_DMA_RX_HANDLE);
+    __HAL_DMA_ENABLE(&BMI088_SPI_DMA_TX_HANDLE);
 }
+
+/**
+ * @brief          open the SPI DMA accord to the value of imu_update_flag
+ * @param[in]      none
+ * @retval         none
+ */
+/**
+ * @brief          根据imu_update_flag的值开启SPI DMA
+ * @param[in]      temp:bmi088的温度
+ * @retval         none
+ */
+static void imu_cmd_spi_dma(void) {
+    UBaseType_t uxSavedInterruptStatus;
+    uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+
+    // 开启陀螺仪的DMA传输
+    if ((gyro_update_flag & (1 << IMU_DR_SHFITS)) && !(BMI088_SPI_HANDLE.hdmatx->Instance->CR & DMA_SxCR_EN) &&
+        !(BMI088_SPI_HANDLE.hdmarx->Instance->CR & DMA_SxCR_EN) && !(accel_update_flag & (1 << IMU_SPI_SHFITS)) && !(accel_temp_update_flag & (1 << IMU_SPI_SHFITS))) {
+        gyro_update_flag &= ~(1 << IMU_DR_SHFITS);
+        gyro_update_flag |= (1 << IMU_SPI_SHFITS);
+
+        HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_RESET);
+        BMI088_SPI_DMA_ENABLE((uint32_t)gyro_dma_tx_buf, (uint32_t)gyro_dma_rx_buf, SPI_DMA_GYRO_LENGHT);
+        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+        return;
+    }
+    // 开启加速度计的DMA传输
+    if ((accel_update_flag & (1 << IMU_DR_SHFITS)) && !(BMI088_SPI_HANDLE.hdmatx->Instance->CR & DMA_SxCR_EN) &&
+        !(BMI088_SPI_HANDLE.hdmarx->Instance->CR & DMA_SxCR_EN) && !(gyro_update_flag & (1 << IMU_SPI_SHFITS)) && !(accel_temp_update_flag & (1 << IMU_SPI_SHFITS))) {
+        accel_update_flag &= ~(1 << IMU_DR_SHFITS);
+        accel_update_flag |= (1 << IMU_SPI_SHFITS);
+
+        HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
+        BMI088_SPI_DMA_ENABLE((uint32_t)accel_dma_tx_buf, (uint32_t)accel_dma_rx_buf, SPI_DMA_ACCEL_LENGHT);
+        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+        return;
+    }
+
+    if ((accel_temp_update_flag & (1 << IMU_DR_SHFITS)) && !(BMI088_SPI_HANDLE.hdmatx->Instance->CR & DMA_SxCR_EN) &&
+        !(BMI088_SPI_HANDLE.hdmarx->Instance->CR & DMA_SxCR_EN) && !(gyro_update_flag & (1 << IMU_SPI_SHFITS)) && !(accel_update_flag & (1 << IMU_SPI_SHFITS))) {
+        accel_temp_update_flag &= ~(1 << IMU_DR_SHFITS);
+        accel_temp_update_flag |= (1 << IMU_SPI_SHFITS);
+
+        HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
+        BMI088_SPI_DMA_ENABLE((uint32_t)accel_temp_dma_tx_buf, (uint32_t)accel_temp_dma_rx_buf, SPI_DMA_ACCEL_TEMP_LENGHT);
+        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+        return;
+    }
+    taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+}
+
+void BSP_SPI_RX_DMA_CB() {
+    if (__HAL_DMA_GET_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx)) != RESET) {
+        __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
+
+        // 陀螺仪读取完毕
+        if (gyro_update_flag & (1 << IMU_SPI_SHFITS)) {
+            gyro_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            gyro_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
+        }
+
+        // 加速度计读取完毕
+        if (accel_update_flag & (1 << IMU_SPI_SHFITS)) {
+            accel_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            accel_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+        }
+
+        // 温度读取完毕
+        if (accel_temp_update_flag & (1 << IMU_SPI_SHFITS)) {
+            accel_temp_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            accel_temp_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+        }
+
+        imu_cmd_spi_dma();
+
+        if (gyro_update_flag & (1 << IMU_UPDATE_SHFITS)) {
+            gyro_update_flag &= ~(1 << IMU_UPDATE_SHFITS);
+            gyro_update_flag |= (1 << IMU_NOTIFY_SHFITS);
+
+#ifdef USE_BOARD_C
+            __HAL_GPIO_EXTI_GENERATE_SWIT(GPIO_PIN_0);
+#endif
+
+#ifdef USE_BOARD_D
+            if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+                static BaseType_t xHigherPriorityTaskWoken;
+                vTaskNotifyGiveFromISR(INS_task_local_handler, &xHigherPriorityTaskWoken);
+                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            }
+#endif
+        }
+    }
+}
+
+void DMA1_Stream3_IRQHandler(void) {
+    if (__HAL_DMA_GET_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx)) != RESET) {
+        __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
+
+        // 陀螺仪读取完毕
+        if (gyro_update_flag & (1 << IMU_SPI_SHFITS)) {
+            gyro_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            gyro_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
+        }
+
+        // 加速度计读取完毕
+        if (accel_update_flag & (1 << IMU_SPI_SHFITS)) {
+            accel_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            accel_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+        }
+
+        // 温度读取完毕
+        if (accel_temp_update_flag & (1 << IMU_SPI_SHFITS)) {
+            accel_temp_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            accel_temp_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+        }
+
+        imu_cmd_spi_dma();
+
+        if (gyro_update_flag & (1 << IMU_UPDATE_SHFITS)) {
+            gyro_update_flag &= ~(1 << IMU_UPDATE_SHFITS);
+            gyro_update_flag |= (1 << IMU_NOTIFY_SHFITS);
+
+#ifdef USE_BOARD_C
+            __HAL_GPIO_EXTI_GENERATE_SWIT(GPIO_PIN_0);
+#endif
+
+#ifdef USE_BOARD_D
+            if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+                static BaseType_t xHigherPriorityTaskWoken;
+                vTaskNotifyGiveFromISR(INS_task_local_handler, &xHigherPriorityTaskWoken);
+                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            }
+#endif
+        }
+    }
+}
+
+/*
+void DMA2_Stream0_IRQHandler(void) {
+    if (__HAL_DMA_GET_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx)) != RESET) {
+        __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
+
+        // 陀螺仪读取完毕
+        if (gyro_update_flag & (1 << IMU_SPI_SHFITS)) {
+            gyro_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            gyro_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
+        }
+
+        // 加速度计读取完毕
+        if (accel_update_flag & (1 << IMU_SPI_SHFITS)) {
+            accel_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            accel_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+        }
+
+        // 温度读取完毕
+        if (accel_temp_update_flag & (1 << IMU_SPI_SHFITS)) {
+            accel_temp_update_flag &= ~(1 << IMU_SPI_SHFITS);
+            accel_temp_update_flag |= (1 << IMU_UPDATE_SHFITS);
+
+            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+        }
+
+        imu_cmd_spi_dma();
+
+        if (gyro_update_flag & (1 << IMU_UPDATE_SHFITS)) {
+            gyro_update_flag &= ~(1 << IMU_UPDATE_SHFITS);
+            gyro_update_flag |= (1 << IMU_NOTIFY_SHFITS);
+
+#ifdef USE_BOARD_C
+            __HAL_GPIO_EXTI_GENERATE_SWIT(GPIO_PIN_0);
+#endif
+
+#ifdef USE_BOARD_D
+            if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+                static BaseType_t xHigherPriorityTaskWoken;
+                vTaskNotifyGiveFromISR(INS_task_local_handler, &xHigherPriorityTaskWoken);
+                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            }
+#endif
+        }
+    }
+} */
 
 /**
  * @brief          imu任务, 初始化 bmi088, ist8310, 计算欧拉角
@@ -196,13 +409,19 @@ void INS_task(void const *pvParameters) {
     // 获取当前任务的任务句柄，
     INS_task_local_handler = xTaskGetHandle(pcTaskGetName(NULL));
 
-    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    BMI088_SPI_HANDLE.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
 
-    if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+    if (HAL_SPI_Init(&BMI088_SPI_HANDLE) != HAL_OK) {
         Error_Handler();
     }
 
-    SPI1_DMA_init((uint32_t)gyro_dma_tx_buf, (uint32_t)gyro_dma_rx_buf, SPI_DMA_GYRO_LENGHT);
+    BMI088_SPI_DMA_init((uint32_t)gyro_dma_tx_buf, (uint32_t)gyro_dma_rx_buf, SPI_DMA_GYRO_LENGHT);
+
+    if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+        static BaseType_t xHigherPriorityTaskWoken;
+        vTaskNotifyGiveFromISR(INS_task_local_handler, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
 
     imu_start_dma_flag = 1;
 
@@ -229,8 +448,11 @@ void INS_task(void const *pvParameters) {
             imu_temp_control(bmi088_real_data.temp);
         }
 
+#ifdef USE_IST8310
         extern ist8310_real_data_t ist8310_real_data;
         AHRS_update(0.001f, bmi088_real_data.gyro, bmi088_real_data.accel, ist8310_real_data.mag);
+#endif
+        AHRS_update(0.001f, bmi088_real_data.gyro, bmi088_real_data.accel, NULL);
 
         INS_quat[0] = q0;
         INS_quat[1] = q1;
@@ -291,7 +513,9 @@ void AHRS_init(float quat[4], float accel[3], float mag[3]) {
 
 void AHRS_update(float time, float gyro[3], float accel[3], float mag[3]) {
     MahonyAHRSupdateIMU(gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2]);
-    //    MahonyAHRSupdate(gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2],mag[0],mag[1],mag[2]);
+#ifdef USE_IST8310
+    MahonyAHRSupdate(gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], mag[0], mag[1], mag[2]);
+#endif
 }
 
 void get_angle(float q[4], float *yaw, float *pitch, float *roll) {
@@ -344,7 +568,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         if (imu_start_dma_flag) {
             imu_cmd_spi_dma();
         }
-    } else if (GPIO_Pin == GPIO_PIN_0) {
+    }
+#ifdef USE_BOARD_C
+    else if (GPIO_Pin == GPIO_PIN_0) {
         // wake up the task
         // 唤醒任务
         if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
@@ -353,99 +579,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
     }
-}
-
-/**
- * @brief          open the SPI DMA accord to the value of imu_update_flag
- * @param[in]      none
- * @retval         none
- */
-/**
- * @brief          根据imu_update_flag的值开启SPI DMA
- * @param[in]      temp:bmi088的温度
- * @retval         none
- */
-static void imu_cmd_spi_dma(void) {
-    UBaseType_t uxSavedInterruptStatus;
-    uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
-
-    // 开启陀螺仪的DMA传输
-    if ((gyro_update_flag & (1 << IMU_DR_SHFITS)) && !(hspi1.hdmatx->Instance->CR & DMA_SxCR_EN) &&
-        !(hspi1.hdmarx->Instance->CR & DMA_SxCR_EN) && !(accel_update_flag & (1 << IMU_SPI_SHFITS)) && !(accel_temp_update_flag & (1 << IMU_SPI_SHFITS))) {
-        gyro_update_flag &= ~(1 << IMU_DR_SHFITS);
-        gyro_update_flag |= (1 << IMU_SPI_SHFITS);
-
-        HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_RESET);
-        SPI1_DMA_enable((uint32_t)gyro_dma_tx_buf, (uint32_t)gyro_dma_rx_buf, SPI_DMA_GYRO_LENGHT);
-        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
-        return;
-    }
-    // 开启加速度计的DMA传输
-    if ((accel_update_flag & (1 << IMU_DR_SHFITS)) && !(hspi1.hdmatx->Instance->CR & DMA_SxCR_EN) &&
-        !(hspi1.hdmarx->Instance->CR & DMA_SxCR_EN) && !(gyro_update_flag & (1 << IMU_SPI_SHFITS)) && !(accel_temp_update_flag & (1 << IMU_SPI_SHFITS))) {
-        accel_update_flag &= ~(1 << IMU_DR_SHFITS);
-        accel_update_flag |= (1 << IMU_SPI_SHFITS);
-
-        HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
-        SPI1_DMA_enable((uint32_t)accel_dma_tx_buf, (uint32_t)accel_dma_rx_buf, SPI_DMA_ACCEL_LENGHT);
-        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
-        return;
-    }
-
-    if ((accel_temp_update_flag & (1 << IMU_DR_SHFITS)) && !(hspi1.hdmatx->Instance->CR & DMA_SxCR_EN) &&
-        !(hspi1.hdmarx->Instance->CR & DMA_SxCR_EN) && !(gyro_update_flag & (1 << IMU_SPI_SHFITS)) && !(accel_update_flag & (1 << IMU_SPI_SHFITS))) {
-        accel_temp_update_flag &= ~(1 << IMU_DR_SHFITS);
-        accel_temp_update_flag |= (1 << IMU_SPI_SHFITS);
-
-        HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
-        SPI1_DMA_enable((uint32_t)accel_temp_dma_tx_buf, (uint32_t)accel_temp_dma_rx_buf, SPI_DMA_ACCEL_TEMP_LENGHT);
-        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
-        return;
-    }
-    taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
-}
-
-void DMA2_Stream0_IRQHandler(void) {
-    if (__HAL_DMA_GET_FLAG(hspi1.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(hspi1.hdmarx)) != RESET) {
-        __HAL_DMA_CLEAR_FLAG(hspi1.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(hspi1.hdmarx));
-
-        // 陀螺仪读取完毕
-        if (gyro_update_flag & (1 << IMU_SPI_SHFITS)) {
-            gyro_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            gyro_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
-        }
-
-        // 加速度计读取完毕
-        if (accel_update_flag & (1 << IMU_SPI_SHFITS)) {
-            accel_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            accel_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
-        }
-
-        // 温度读取完毕
-        if (accel_temp_update_flag & (1 << IMU_SPI_SHFITS)) {
-            accel_temp_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            accel_temp_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
-        }
-
-        imu_cmd_spi_dma();
-
-        if (gyro_update_flag & (1 << IMU_UPDATE_SHFITS)) {
-            gyro_update_flag &= ~(1 << IMU_UPDATE_SHFITS);
-            gyro_update_flag |= (1 << IMU_NOTIFY_SHFITS);
-            __HAL_GPIO_EXTI_GENERATE_SWIT(GPIO_PIN_0);
-        }
-    }
+#endif
 }
 
 void BSP_bmi088_Init() {
-    HAL_TIM_Base_Start(&htim10);
-    HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
+    HAL_TIM_Base_Start(&HEAT_TIM_HANDLE);
+    HAL_TIM_PWM_Start(&HEAT_TIM_HANDLE, HEAT_TIM_CHANNEL);
 
     extern void imu_cli_register();
     imu_cli_register();
@@ -454,5 +593,3 @@ void BSP_bmi088_Init() {
     // imuTaskHandle = osThreadCreate(osThread(imuTask), NULL);
     xTaskCreate((void (*)(void *))INS_task, "IMU", 256, NULL, 1, (TaskHandle_t *const)&imuTaskHandle);
 }
-
-#endif

@@ -7,6 +7,7 @@
 #include "BSP_UART.h"
 #include "BSP_USB.h"
 #include "BSP_W25Qx.h"
+#include "BSP_bmi088.h"
 #include "CLI.h"
 #include "bsp_buzzer.h"
 #include "bsp_delay.h"
@@ -15,10 +16,6 @@
 #include "storage.h"
 #include "stream.h"
 #include "tinybus.h"
-
-#ifdef USE_BOARD_C
-#include "BSP_bmi088.h"
-#endif
 
 void Sys_Init();
 

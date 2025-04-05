@@ -200,11 +200,11 @@ void BSP_UART_Init() {
     extern UART_HandleTypeDef huart4;
     UART_InstanceConfigTypeDef uart4_config = {
         .UART_handle = &huart4,
-        .recv_buff_size = 18,
+        .recv_buff_size = 36,
         .tx_buff_size = 255,
 
-        .tx_buffer_name = "/stream/ble_tx",
-        .rx_buffer_name = "/stream/ble_rx",
+        .tx_buffer_name = "/stream/dbus_tx",
+        .rx_buffer_name = "/stream/dbus_rx",
 
         // .tx_topic_name = "/DBUS/TX",
         .rx_topic_name = "/DBUS/RX"};
