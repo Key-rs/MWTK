@@ -9,12 +9,6 @@
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
 
-void BMI088_GPIO_init(void) {
-}
-
-void BMI088_com_init(void) {
-}
-
 void BMI088_delay_ms(uint16_t ms) {
     osDelay(ms);
 }

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "BSP_IMU_cfg.h"
 #include "intf_sys.h"
 #include "justfw_cfg.h"
 #include "main.h"
@@ -22,7 +23,9 @@ void Sys_Init() {
     BSP_CAN_Init();
     Bsp_Buzzer_Init();
 
+#ifdef USE_BMI088
     BSP_bmi088_Init();
+#endif
 
     CLI_Init();
     Storage_Init();

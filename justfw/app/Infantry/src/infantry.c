@@ -37,44 +37,7 @@ static void loop() {
     }
 }
 
-#include "justfw_cfg.h"
-static void Custom_Controller_Init() {
-#ifdef USE_BOARD_D
-    extern UART_HandleTypeDef huart4;
-
-    HAL_UART_DeInit(&huart4);
-    huart4.Instance = UART4;
-    huart4.Init.BaudRate = 115200;
-    huart4.Init.WordLength = UART_WORDLENGTH_8B;
-    huart4.Init.StopBits = UART_STOPBITS_1;
-    huart4.Init.Parity = UART_PARITY_NONE;
-    huart4.Init.Mode = UART_MODE_TX_RX;
-    huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart4.Init.OverSampling = UART_OVERSAMPLING_16;
-
-    HAL_UART_Init(&huart4);
-#endif
-
-#ifdef USE_BOARD_C
-    extern UART_HandleTypeDef huart3;
-
-    HAL_UART_DeInit(&huart3);
-    huart3.Instance = USART3;
-    huart3.Init.BaudRate = 115200;
-    huart3.Init.WordLength = UART_WORDLENGTH_8B;
-    huart3.Init.StopBits = UART_STOPBITS_1;
-    huart3.Init.Parity = UART_PARITY_NONE;
-    huart3.Init.Mode = UART_MODE_TX_RX;
-    huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-
-    HAL_UART_Init(&huart3);
-
-#endif
-}
-
 void Infantry_Init() {
-    Custom_Controller_Init();
     Infantry_Chassis_Init();
     Infantry_Gimbal_Init();
 

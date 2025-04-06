@@ -281,105 +281,6 @@ void BSP_SPI_RX_DMA_CB() {
     }
 }
 
-void DMA1_Stream3_IRQHandler(void) {
-    if (__HAL_DMA_GET_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx)) != RESET) {
-        __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
-
-        // 陀螺仪读取完毕
-        if (gyro_update_flag & (1 << IMU_SPI_SHFITS)) {
-            gyro_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            gyro_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
-        }
-
-        // 加速度计读取完毕
-        if (accel_update_flag & (1 << IMU_SPI_SHFITS)) {
-            accel_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            accel_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
-        }
-
-        // 温度读取完毕
-        if (accel_temp_update_flag & (1 << IMU_SPI_SHFITS)) {
-            accel_temp_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            accel_temp_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
-        }
-
-        imu_cmd_spi_dma();
-
-        if (gyro_update_flag & (1 << IMU_UPDATE_SHFITS)) {
-            gyro_update_flag &= ~(1 << IMU_UPDATE_SHFITS);
-            gyro_update_flag |= (1 << IMU_NOTIFY_SHFITS);
-
-#ifdef USE_BOARD_C
-            __HAL_GPIO_EXTI_GENERATE_SWIT(GPIO_PIN_0);
-#endif
-
-#ifdef USE_BOARD_D
-            if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
-                static BaseType_t xHigherPriorityTaskWoken;
-                vTaskNotifyGiveFromISR(INS_task_local_handler, &xHigherPriorityTaskWoken);
-                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-            }
-#endif
-        }
-    }
-}
-
-/*
-void DMA2_Stream0_IRQHandler(void) {
-    if (__HAL_DMA_GET_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx)) != RESET) {
-        __HAL_DMA_CLEAR_FLAG(BMI088_SPI_HANDLE.hdmarx, __HAL_DMA_GET_TC_FLAG_INDEX(BMI088_SPI_HANDLE.hdmarx));
-
-        // 陀螺仪读取完毕
-        if (gyro_update_flag & (1 << IMU_SPI_SHFITS)) {
-            gyro_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            gyro_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
-        }
-
-        // 加速度计读取完毕
-        if (accel_update_flag & (1 << IMU_SPI_SHFITS)) {
-            accel_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            accel_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
-        }
-
-        // 温度读取完毕
-        if (accel_temp_update_flag & (1 << IMU_SPI_SHFITS)) {
-            accel_temp_update_flag &= ~(1 << IMU_SPI_SHFITS);
-            accel_temp_update_flag |= (1 << IMU_UPDATE_SHFITS);
-
-            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
-        }
-
-        imu_cmd_spi_dma();
-
-        if (gyro_update_flag & (1 << IMU_UPDATE_SHFITS)) {
-            gyro_update_flag &= ~(1 << IMU_UPDATE_SHFITS);
-            gyro_update_flag |= (1 << IMU_NOTIFY_SHFITS);
-
-#ifdef USE_BOARD_C
-            __HAL_GPIO_EXTI_GENERATE_SWIT(GPIO_PIN_0);
-#endif
-
-#ifdef USE_BOARD_D
-            if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
-                static BaseType_t xHigherPriorityTaskWoken;
-                vTaskNotifyGiveFromISR(INS_task_local_handler, &xHigherPriorityTaskWoken);
-                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-            }
-#endif
-        }
-    }
-} */
-
 /**
  * @brief          imu任务, 初始化 bmi088, ist8310, 计算欧拉角
  * @param[in]      pvParameters: NULL
@@ -489,18 +390,6 @@ void INS_task(void const *pvParameters) {
             INS_SUM_angle_N[i] = -INS_SUM_angle[i];
             _Last_INS_angle[i] = INS_angle[i];
         }
-        //---------------------------------------
-        //        char buffer[100], buffer2[100];
-        //        sprintf(buffer,"gyro: %f,%f,%f\n",bmi088_real_data.gyro[0],bmi088_real_data.gyro[1],bmi088_real_data.gyro[2]);
-        //        elog_i("imu",buffer);
-        //        sprintf(buffer,"acc: %f,%f,%f\n",bmi088_real_data.accel[0],bmi088_real_data.accel[1],bmi088_real_data.accel[2]);
-        //        elog_i("imu",buffer);
-        //        sprintf(buffer,"gyro_acc_angle: %f,%f,%f,%f,%f,%f,%f,%f,%f\n",bmi088_real_data.gyro[0],bmi088_real_data.gyro[1],bmi088_real_data.gyro[2],bmi088_real_data.accel[0],bmi088_real_data.accel[1],bmi088_real_data.accel[2],INS_angle[0], INS_angle[1], INS_angle[2]);
-        //        elog_i("imu",buffer);
-        //        sprintf(buffer, "quat: %f,%f,%f,%f\n", q0, q1, q2, q3);
-        //        elog_i("imu",buffer);
-        //        sprintf(buffer2, "angle: %f,%f,%f\n", INS_SUM_angle[0], INS_SUM_angle[1], INS_SUM_angle[2]);
-        //        elog_i("imu",buffer2);
     }
 }
 

@@ -72,11 +72,15 @@ void DR16_solve(const uint8_t *sbus_buf) {
     // DaemonReload(g_rc_daemon_instance);  // 重载守护进程(检查遥控器是否正常工作
     rc_ctrl[TEMP].sn += 1;
 
-#ifdef USE_BOARD_C
     if (rc_ctrl[TEMP].sn % 0x0F == 0) {
+#ifdef USE_BOARD_C
         HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_11);
-    }
 #endif
+
+#ifdef USE_BOARD_D
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14);
+#endif
+    }
 }
 
 void DR16_RX_CallBack(void *message, BusSubscriberHandle_t subscriber) {
@@ -154,8 +158,8 @@ static const CLI_Command_Definition_t xDR16Command = {
 void DR16_Init() {
     FreeRTOS_CLIRegisterCommand(&xDR16Command);
     rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
-    // g_dr16_rx = xBusSubscribeFromName("/DBUS/RX", DR16_RX_CallBack);  // 串口遥控器
-    g_dr16_rx = xBusSubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
+    g_dr16_rx = xBusSubscribeFromName("/DBUS/RX", DR16_RX_CallBack);  // 串口遥控器
+    // g_dr16_rx = xBusSubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
 
     // 遥控器事件
     g_dr16_signal_disconnected = xBusTopicRegister("/signal/DR16/disconnected");

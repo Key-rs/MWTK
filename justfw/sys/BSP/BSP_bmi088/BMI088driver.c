@@ -85,8 +85,8 @@ static uint8_t write_BMI088_gyro_reg_data_error[BMI088_WRITE_GYRO_REG_NUM][3] =
 uint8_t BMI088_init(void) {
     uint8_t error = BMI088_NO_ERROR;
     // GPIO and SPI  Init .
-    BMI088_GPIO_init();
-    BMI088_com_init();
+    // BMI088_GPIO_init();
+    // BMI088_com_init();
 
     // self test pass and init
     if (bmi088_accel_self_test() != BMI088_NO_ERROR) {
