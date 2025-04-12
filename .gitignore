@@ -49,6 +49,5 @@ STM32F407IGHx_FLASH.ld
 cmake
 CMakeFiles
 
-justfw/modules/logic/test/
-
 justfw/config
+ign_*
