@@ -44,6 +44,9 @@ typedef struct INTF_Motor_Handle {
 
     float angle_offset;  // 电机角度偏移 rad
 
+
+
+
     /**
      * @brief 设置电机模式
      * @param self 电机句柄

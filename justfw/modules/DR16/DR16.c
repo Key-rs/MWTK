@@ -158,8 +158,8 @@ static const CLI_Command_Definition_t xDR16Command = {
 void DR16_Init() {
     FreeRTOS_CLIRegisterCommand(&xDR16Command);
     rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
-    g_dr16_rx = xBusSubscribeFromName("/DBUS/RX", DR16_RX_CallBack);  // 串口遥控器
-    // g_dr16_rx = xBusSubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
+    // g_dr16_rx = xBusSubscribeFromName("/DBUS/RX", DR16_RX_CallBack);  // 串口遥控器
+    g_dr16_rx = xBusSubscribeFromName("/UART/BLE_RX", DR16_RX_CallBack);  // 蓝牙遥控器
 
     // 遥控器事件
     g_dr16_signal_disconnected = xBusTopicRegister("/signal/DR16/disconnected");

@@ -202,7 +202,7 @@ static void imu_cmd_spi_dma(void) {
         gyro_update_flag &= ~(1 << IMU_DR_SHFITS);
         gyro_update_flag |= (1 << IMU_SPI_SHFITS);
 
-        HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_RESET);
         BMI088_SPI_DMA_ENABLE((uint32_t)gyro_dma_tx_buf, (uint32_t)gyro_dma_rx_buf, SPI_DMA_GYRO_LENGHT);
         taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
         return;
@@ -213,7 +213,7 @@ static void imu_cmd_spi_dma(void) {
         accel_update_flag &= ~(1 << IMU_DR_SHFITS);
         accel_update_flag |= (1 << IMU_SPI_SHFITS);
 
-        HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
         BMI088_SPI_DMA_ENABLE((uint32_t)accel_dma_tx_buf, (uint32_t)accel_dma_rx_buf, SPI_DMA_ACCEL_LENGHT);
         taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
         return;
@@ -224,7 +224,7 @@ static void imu_cmd_spi_dma(void) {
         accel_temp_update_flag &= ~(1 << IMU_DR_SHFITS);
         accel_temp_update_flag |= (1 << IMU_SPI_SHFITS);
 
-        HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET);
         BMI088_SPI_DMA_ENABLE((uint32_t)accel_temp_dma_tx_buf, (uint32_t)accel_temp_dma_rx_buf, SPI_DMA_ACCEL_TEMP_LENGHT);
         taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
         return;
@@ -241,7 +241,7 @@ void BSP_SPI_RX_DMA_CB() {
             gyro_update_flag &= ~(1 << IMU_SPI_SHFITS);
             gyro_update_flag |= (1 << IMU_UPDATE_SHFITS);
 
-            HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
+            // HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
         }
 
         // 加速度计读取完毕
@@ -249,7 +249,7 @@ void BSP_SPI_RX_DMA_CB() {
             accel_update_flag &= ~(1 << IMU_SPI_SHFITS);
             accel_update_flag |= (1 << IMU_UPDATE_SHFITS);
 
-            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+            // HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
         }
 
         // 温度读取完毕
@@ -257,7 +257,7 @@ void BSP_SPI_RX_DMA_CB() {
             accel_temp_update_flag &= ~(1 << IMU_SPI_SHFITS);
             accel_temp_update_flag |= (1 << IMU_UPDATE_SHFITS);
 
-            HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+            // HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
         }
 
         imu_cmd_spi_dma();
@@ -444,32 +444,32 @@ static void imu_temp_control(float temp) {
         IMU_temp_PWM(MPU6500_TEMP_PWM_MAX - 1);
     }
 }
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == INT1_ACCEL_Pin) {
-        accel_update_flag |= 1 << IMU_DR_SHFITS;
-        accel_temp_update_flag |= 1 << IMU_DR_SHFITS;
-        if (imu_start_dma_flag) {
-            imu_cmd_spi_dma();
-        }
-    } else if (GPIO_Pin == INT1_GYRO_Pin) {
-        gyro_update_flag |= 1 << IMU_DR_SHFITS;
-        if (imu_start_dma_flag) {
-            imu_cmd_spi_dma();
-        }
-    }
-#ifdef USE_BOARD_C
-    else if (GPIO_Pin == GPIO_PIN_0) {
-        // wake up the task
-        // 唤醒任务
-        if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
-            static BaseType_t xHigherPriorityTaskWoken;
-            vTaskNotifyGiveFromISR(INS_task_local_handler, &xHigherPriorityTaskWoken);
-            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-        }
-    }
-#endif
-}
+//
+// void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+//     if (GPIO_Pin == INT1_ACCEL_Pin) {
+//         accel_update_flag |= 1 << IMU_DR_SHFITS;
+//         accel_temp_update_flag |= 1 << IMU_DR_SHFITS;
+//         if (imu_start_dma_flag) {
+//             imu_cmd_spi_dma();
+//         }
+//     } else if (GPIO_Pin == INT1_GYRO_Pin) {
+//         gyro_update_flag |= 1 << IMU_DR_SHFITS;
+//         if (imu_start_dma_flag) {
+//             imu_cmd_spi_dma();
+//         }
+//     }
+// #ifdef USE_BOARD_C
+//     else if (GPIO_Pin == GPIO_PIN_0) {
+//         // wake up the task
+//         // 唤醒任务
+//         if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+//             static BaseType_t xHigherPriorityTaskWoken;
+//             vTaskNotifyGiveFromISR(INS_task_local_handler, &xHigherPriorityTaskWoken);
+//             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+//         }
+//     }
+// #endif
+// }
 
 void BSP_bmi088_Init() {
     HAL_TIM_Base_Start(&HEAT_TIM_HANDLE);

@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "BSP_IMU_cfg.h"
+// #include "BSP_IMU_cfg.h"
 #include "intf_sys.h"
 #include "justfw_cfg.h"
 #include "main.h"

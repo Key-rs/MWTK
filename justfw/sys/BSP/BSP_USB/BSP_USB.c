@@ -39,7 +39,7 @@ static void usb_tx_data_handler(StreamListener_t *listener) {
     uint8_t buffer[USB_TX_BUFFER_SIZE] = {0};
     uint16_t length = xStreamBufferReceive(usb_tx_buffer, buffer, USB_TX_BUFFER_SIZE, 0);
     extern uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
-    CDC_Transmit_FS(buffer, length);
+    // CDC_Transmit_FS(buffer, length);
 }
 
 void BSP_USB_Init() {

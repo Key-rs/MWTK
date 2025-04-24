@@ -40,7 +40,14 @@ include_directories(interface)
 # 如果有其他依赖库，可以在这里链接
 # target_link_libraries(justFW PRIVATE other_library)
 
-add_library(justFW STATIC ${JUSTFW_SOURCES})
+add_library(justFW STATIC ${JUSTFW_SOURCES}
+        modules/logic/gripper/gripper.c
+        modules/logic/gripper/gripper.h
+        modules/logic/gripper/gripper.c
+        modules/logic/gripper/gripper.h
+        modules/motors/BrushMotorPWM/BrushMotorPWM.c
+        ../Core/Src/main.c
+)
 
 # 链接 stm32cubemx 库
 target_link_libraries(justFW PRIVATE stm32cubemx)
