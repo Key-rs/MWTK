@@ -41,6 +41,7 @@ static void motor_set_speed(INTF_Motor_HandleTypeDef* self, float speed) {   // 
     MotorCondition *condition=motor->condition;
     condition->rateFIFO[2]=CLAMP(fabs(self->target_speed), 0,motor->config.htim->Init.Period-1);
     self->real_speed =CalRate(condition);
+
 }
 
  static void motor_send_pwm(INTF_Motor_HandleTypeDef* self) {

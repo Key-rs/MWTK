@@ -168,7 +168,7 @@
 // }
 //
 // static float get_pitch_t() {
-//     // TODO0 注意我这里c板由于是倒置的所以加了个PI
+//     // TODO 注意我这里c板由于是倒置的所以加了个PI
 //     return loop_float_constrain(GIMBAL_PITCH, -PI, PI);
 // }
 //
