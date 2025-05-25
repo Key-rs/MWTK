@@ -122,7 +122,7 @@ void orechassis_Init()
     HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
 
     // HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
-    // __HAL_TIM_SET_AUTORELOAD(&htim8, 20000);
+     // __HAL_TIM_SET_AUTORELOAD(&htim8, 20000);
 
 
 //    orechassis_MainLoopTaskHandle = osThreadCreate(osThread(orechassis_MainLoopTask), NULL);

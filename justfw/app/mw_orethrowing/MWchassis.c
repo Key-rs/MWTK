@@ -46,10 +46,10 @@ void MW_Chassis_SetSpeed(INTF_Chassis_HandleTypeDef *self, float speed_x, float 
     g_mw_chassis->target_speed_y = speed_y;
     g_mw_chassis->target_speed_w = speed_w;
 
-    priv->motor_f_r->set_speed(priv->motor_f_r,(speed_x - speed_y + speed_w * (Chassis_Width + Chassis_Length) * 0.5f) * Motor_DECELE_RATIO / WHEEL_R);
-    priv->motor_f_l->set_speed(priv->motor_f_l,(speed_x + speed_y + speed_w * (Chassis_Width + Chassis_Length) * 0.5f) * Motor_DECELE_RATIO / WHEEL_R);
-    priv->motor_b_l->set_speed(priv->motor_b_l,(-speed_x + speed_y + speed_w * (Chassis_Width + Chassis_Length) * 0.5f) * Motor_DECELE_RATIO / WHEEL_R);
-    priv->motor_b_r->set_speed(priv->motor_b_r,(-speed_x - speed_y + speed_w * (Chassis_Width + Chassis_Length) * 0.5f) * Motor_DECELE_RATIO / WHEEL_R);
+    priv->motor_f_r->set_speed(priv->motor_f_r,speed_x - speed_y + speed_w );
+    priv->motor_f_l->set_speed(priv->motor_f_l,speed_x + speed_y + speed_w);
+    priv->motor_b_l->set_speed(priv->motor_b_l,-speed_x + speed_y + speed_w);
+    priv->motor_b_r->set_speed(priv->motor_b_r,-speed_x - speed_y + speed_w );
 
     // float data[4];
     // data[0] = priv->motor_f_r->target_speed;
