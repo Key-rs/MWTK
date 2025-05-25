@@ -19,12 +19,12 @@ float CalRate(MotorCondition *condition) {
     // [3] 将当前计算的rate存入缓冲区当前索引位置
     condition->filter_buf[condition->idx] = condition->rate;
     // [4] 索引递增并循环（0→1→2→3→4→0→...）
-    condition->idx = (condition->idx + 1) % 10;
+    condition->idx = (condition->idx + 1) % 6;
     // [5] 计算缓冲区所有元素的和
     float sum = 0;
-    for (int i = 0; i < 10; i++) sum += condition->filter_buf[i];
+    for (int i = 0; i < 6; i++) sum += condition->filter_buf[i];
     // [6] 求平均值并更新rate
-    condition->rate = sum / 10;
+    condition->rate = sum / 6;
     return condition->rate;
 }//滤波
 

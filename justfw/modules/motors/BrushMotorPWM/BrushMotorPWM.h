@@ -11,7 +11,7 @@
 typedef struct MotorCondition {
     float rateFIFO[3];
     float rate;
-    float filter_buf[10];
+    float filter_buf[6];
     uint8_t idx;
 }MotorCondition;
 
