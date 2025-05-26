@@ -25,8 +25,7 @@ void MW_Logic_MainLoop() {
 
         if (g_dr16_is_connected) {
             // 底盘控制
-            __HAL_TIM_SET_AUTORELOAD(&htim3, 1000);
-            __HAL_TIM_SET_AUTORELOAD(&htim12, 1000);
+
             if (MW_logic_rc_ctrl[0].rc.switch_left == 1 && MW_logic_rc_ctrl[0].rc.switch_right == 1) {
 
                 g_MW_logic_chassis->target_speed_x = MW_logic_rc_ctrl[0].rc.rocker_l_ / 660.0f * CHASSIS_SPEED_X_MAX;

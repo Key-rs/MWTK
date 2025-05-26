@@ -46,8 +46,6 @@ static void motor_set_speed(INTF_Motor_HandleTypeDef* self,float speed)
 
 }
 
-
-
 static void motor_mainloop() {
     while (true) {
         ListItem_t* item = listGET_HEAD_ENTRY(&motors);
@@ -57,6 +55,9 @@ static void motor_mainloop() {
 
            // priv->is_recieved = false;
             // motor_send_pwm(m);//can2pwm控制电机
+            __HAL_TIM_SET_AUTORELOAD(&htim3, 1000);
+            __HAL_TIM_SET_AUTORELOAD(&htim12, 1000);
+
             motor_set_pwm(m);//PWM控制电机
 
             item = listGET_NEXT(item);
