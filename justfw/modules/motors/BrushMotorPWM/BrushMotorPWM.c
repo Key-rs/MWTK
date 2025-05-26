@@ -33,7 +33,7 @@ static void motor_set_pwm(INTF_Motor_HandleTypeDef *self) {
 
     __HAL_TIM_SET_COMPARE(motor->config.htim,motor->config.channel,self->real_speed);
     //*motor->config.ccr = CLAMP(abs(self->target_speed), 0, motor->config.htim->Instance->ARR);
-     HAL_GPIO_WritePin(motor->config.GPIOx, motor->config.GPIO_Pin,(self->real_speed >= 0) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+     HAL_GPIO_WritePin(motor->config.GPIOx, motor->config.GPIO_Pin,self->direction*self->real_speed >= 0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 static void motor_set_speed(INTF_Motor_HandleTypeDef* self,float speed)
