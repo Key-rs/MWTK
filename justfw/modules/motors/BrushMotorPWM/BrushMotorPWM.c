@@ -43,7 +43,6 @@ static void motor_set_speed(INTF_Motor_HandleTypeDef* self,float speed)
     MotorCondition *condition=motor->condition;
     condition->rateFIFO[2]=CLAMP(fabs(self->target_speed), 0,motor->config.htim->Init.Period-1);
     self->real_speed =CalRate(condition);
-
 }
 
 static void motor_mainloop() {
@@ -52,14 +51,12 @@ static void motor_mainloop() {
         while (item != listGET_END_MARKER(&motors)) {
             INTF_Motor_HandleTypeDef* m = listGET_LIST_ITEM_OWNER(item);
              // BrushPWM_Motor_ResDataTypeDef* priv = m->private_data;
-
            // priv->is_recieved = false;
             // motor_send_pwm(m);//can2pwm控制电机
             __HAL_TIM_SET_AUTORELOAD(&htim3, 1000);
             __HAL_TIM_SET_AUTORELOAD(&htim12, 1000);
 
             motor_set_pwm(m);//PWM控制电机
-
             item = listGET_NEXT(item);
             }
         vTaskDelay(1);
@@ -92,7 +89,6 @@ INTF_Motor_HandleTypeDef* BrushPWM_Motor_Register(BrushPWM_Motor_ConfigTypeDef* 
 }
 
 void BrushPWM_Motor_Init() {
-
     vListInitialise(&motors);
     BrushPWM_Motor_ConfigTypeDef config1 = {
         .motor_ptr_name = "/motor/MW_F_R",

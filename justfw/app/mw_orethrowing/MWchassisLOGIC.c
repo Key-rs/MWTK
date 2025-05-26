@@ -20,7 +20,7 @@ INTF_Motor_HandleTypeDef *DM1;
 extern int g_dr16_is_connected;
 
 void MW_Logic_MainLoop() {
-    osDelay(5000);  // 等待其他模块初始化
+    osDelay(3000);  // 等待其他模块初始化
     while (1) {
 
         if (g_dr16_is_connected) {
