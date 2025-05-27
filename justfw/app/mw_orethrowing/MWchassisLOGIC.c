@@ -30,7 +30,7 @@ void MW_Logic_MainLoop() {
 
                 g_MW_logic_chassis->target_speed_x = MW_logic_rc_ctrl[0].rc.rocker_l_ / 660.0f * CHASSIS_SPEED_X_MAX;
                 g_MW_logic_chassis->target_speed_y = MW_logic_rc_ctrl[0].rc.rocker_l1 / 660.0f * CHASSIS_SPEED_Y_MAX;
-                g_MW_logic_chassis->target_speed_w = MW_logic_rc_ctrl[0].rc.rocker_r1 / 660.0f * CHASSIS_SPEED_W_MAX;
+                g_MW_logic_chassis->target_speed_w = MW_logic_rc_ctrl[0].rc.rocker_r_ / 660.0f * CHASSIS_SPEED_W_MAX;
 
                 // DM1->set_angle(DM1,MW_logic_rc_ctrl[0].rc.dial / 660.0f*12.5);
             }

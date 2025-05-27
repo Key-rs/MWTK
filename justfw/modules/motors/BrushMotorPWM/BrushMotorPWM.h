@@ -8,6 +8,8 @@
 
 #include "interface.h"
 
+#define windows 30
+
 // kalman_filter.h（可新建一个头文件或直接放在 BrushMotorPWM.c 上方）
 
 typedef struct {
@@ -22,7 +24,7 @@ typedef struct {
 typedef struct MotorCondition {
     float rateFIFO[3];
     float rate;
-    float filter_buf[10];
+    float filter_buf[windows];
     uint8_t idx;
 
     KalmanFilter kf;

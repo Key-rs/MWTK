@@ -36,19 +36,20 @@ float kalman_update(KalmanFilter *kf, float measurement) {
 float CalRate(MotorCondition *condition) {
     int fifo=0;
     for (int i=0; i<3; i++) {
-        condition->rateFIFO[i] =condition->rateFIFO[i+1];
         fifo += condition->rateFIFO[i];
+        condition->rateFIFO[i] =condition->rateFIFO[i+1];
+
     }
     condition->rate = fifo/3;
     // [3] 将当前计算的rate存入缓冲区当前索引位置
     condition->filter_buf[condition->idx] = condition->rate;
     // [4] 索引递增并循环（0→1→2→3→4→0→...）
-    condition->idx = (condition->idx + 1) % 10;
+    condition->idx = (condition->idx + 1) % windows;
     // [5] 计算缓冲区所有元素的和
     float sum = 0;
-    for (int i = 0; i < 10; i++) sum += condition->filter_buf[i];
+    for (int i = 0; i < windows; i++) sum += condition->filter_buf[i];
     // [6] 求平均值并更新rate
-    condition->rate = sum / 10;
+    condition->rate = sum / windows;
     return condition->rate;
 }
 
@@ -65,10 +66,9 @@ static void motor_set_speed(INTF_Motor_HandleTypeDef* self,float speed)
         BrushPWM_Motor_ResDataTypeDef *motor = self->private_data;
         MotorCondition *condition = motor->condition;
         int p = motor->config.htim->Init.Period - 1;
-        // 限制输入范围
-        float clamped_speed = CLAMP(speed, -p, p);
         // 使用卡尔曼滤波进行平滑
-        self->real_speed = kalman_update(&condition->kf, clamped_speed);
+        condition->rateFIFO[2] = kalman_update(&condition->kf, CLAMP(speed, -p, p));
+    self->real_speed =CalRate(condition);
     // int p=motor->config.htim->Init.Period-1;
     // condition->rateFIFO[2]=CLAMP(speed, -p,p);
     // self->real_speed =CalRate(condition);
@@ -102,7 +102,7 @@ INTF_Motor_HandleTypeDef* BrushPWM_Motor_Register(BrushPWM_Motor_ConfigTypeDef* 
     priv->condition = JUST_MALLOC(sizeof(MotorCondition));
     memset(priv->condition, 0, sizeof(MotorCondition));
     // 初始化卡尔曼滤波器：初始值为 0，初始误差为 1，过程噪声 0.3，测量噪声 0.5
-    kalman_init(&priv->condition->kf, 0.0f, 1.0f, 0.3f, 0.5f);
+    kalman_init(&priv->condition->kf, 0.0f, 1.0f, 0.1f, 1.0f);
 
     motor->private_data = priv;
     motor->motor_id = config->motor_id;
@@ -156,7 +156,7 @@ void BrushPWM_Motor_Init() {
 
     BrushPWM_Motor_ConfigTypeDef config4 = {
         .motor_ptr_name = "/motor/MW_B_L",
-        .direction = 1.0f,
+        .direction = -1.0f,
         .motor_id = 3,
         .htim =&htim3,
         .channel = TIM_CHANNEL_4,
