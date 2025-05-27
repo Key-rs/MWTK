@@ -101,7 +101,7 @@ INTF_Motor_HandleTypeDef* BrushPWM_Motor_Register(BrushPWM_Motor_ConfigTypeDef* 
     // 分配并初始化 MotorCondition
     priv->condition = JUST_MALLOC(sizeof(MotorCondition));
     memset(priv->condition, 0, sizeof(MotorCondition));
-    // 初始化卡尔曼滤波器：初始值为 0，初始误差为 1，过程噪声 0.1，测量噪声 0.5
+    // 初始化卡尔曼滤波器：初始值为 0，初始误差为 1，过程噪声 0.3，测量噪声 0.5
     kalman_init(&priv->condition->kf, 0.0f, 1.0f, 0.3f, 0.5f);
 
     motor->private_data = priv;

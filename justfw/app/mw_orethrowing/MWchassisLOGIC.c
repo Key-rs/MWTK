@@ -41,7 +41,7 @@ void MW_Logic_MainLoop() {
             g_MW_logic_chassis->target_speed_w = 0;
             // DM1->set_angle(DM1,0);
         }
-        osDelay(10);
+        osDelay(5);
     }
 }
 
