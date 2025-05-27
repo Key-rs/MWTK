@@ -33,15 +33,16 @@ static void motor_set_pwm(INTF_Motor_HandleTypeDef *self) {
 
     __HAL_TIM_SET_COMPARE(motor->config.htim,motor->config.channel,self->real_speed);
     //*motor->config.ccr = CLAMP(abs(self->target_speed), 0, motor->config.htim->Instance->ARR);
-     HAL_GPIO_WritePin(motor->config.GPIOx, motor->config.GPIO_Pin,self->direction*self->real_speed >= 0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+     HAL_GPIO_WritePin(motor->config.GPIOx, motor->config.GPIO_Pin,(self->direction*self->real_speed) >= 0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 static void motor_set_speed(INTF_Motor_HandleTypeDef* self,float speed)
 {   // 在motor_set_pwm中增加范围限制
-    self->target_speed=speed;
+    // self->target_speed=speed;
     BrushPWM_Motor_ResDataTypeDef *motor=self->private_data;
     MotorCondition *condition=motor->condition;
-    condition->rateFIFO[2]=CLAMP(fabs(self->target_speed), 0,motor->config.htim->Init.Period-1);
+    int p=motor->config.htim->Init.Period-1;
+    condition->rateFIFO[2]=CLAMP(speed, -p,p);
     self->real_speed =CalRate(condition);
 }
 
