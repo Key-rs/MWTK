@@ -8,11 +8,24 @@
 
 #include "interface.h"
 
+// kalman_filter.h（可新建一个头文件或直接放在 BrushMotorPWM.c 上方）
+
+typedef struct {
+    float x;   // 状态估计值
+    float P;   // 估计误差协方差
+    float Q;   // 过程噪声
+    float R;   // 测量噪声
+} KalmanFilter;
+
+
+
 typedef struct MotorCondition {
     float rateFIFO[3];
     float rate;
-    float filter_buf[6];
+    float filter_buf[10];
     uint8_t idx;
+
+    KalmanFilter kf;
 }MotorCondition;
 
 typedef struct BrushPWM_Motor_Config {

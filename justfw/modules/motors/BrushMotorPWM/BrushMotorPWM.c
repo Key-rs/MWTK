@@ -8,6 +8,31 @@
 
 static List_t motors;
 
+void kalman_init(KalmanFilter *kf, float initial_value, float initial_P, float Q, float R);
+float kalman_update(KalmanFilter *kf, float measurement);
+
+void kalman_init(KalmanFilter *kf, float initial_value, float initial_P, float Q, float R) {
+    kf->x = initial_value;
+    kf->P = initial_P;
+    kf->Q = Q;
+    kf->R = R;
+}
+
+float kalman_update(KalmanFilter *kf, float measurement) {
+    // Step 1: Predict
+    float x_pred = kf->x;
+    float P_pred = kf->P + kf->Q;
+
+    // Step 2: Compute Kalman Gain
+    float K = P_pred / (P_pred + kf->R);
+
+    // Step 3: Update estimate
+    kf->x = x_pred + K * (measurement - x_pred);
+    kf->P = (1 - K) * P_pred;
+
+    return kf->x;
+}
+
 float CalRate(MotorCondition *condition) {
     int fifo=0;
     for (int i=0; i<3; i++) {
@@ -15,23 +40,21 @@ float CalRate(MotorCondition *condition) {
         fifo += condition->rateFIFO[i];
     }
     condition->rate = fifo/3;
-
     // [3] 将当前计算的rate存入缓冲区当前索引位置
     condition->filter_buf[condition->idx] = condition->rate;
     // [4] 索引递增并循环（0→1→2→3→4→0→...）
-    condition->idx = (condition->idx + 1) % 6;
+    condition->idx = (condition->idx + 1) % 10;
     // [5] 计算缓冲区所有元素的和
     float sum = 0;
-    for (int i = 0; i < 6; i++) sum += condition->filter_buf[i];
+    for (int i = 0; i < 10; i++) sum += condition->filter_buf[i];
     // [6] 求平均值并更新rate
-    condition->rate = sum / 6;
+    condition->rate = sum / 10;
     return condition->rate;
-}//滤波
+}
 
 static void motor_set_pwm(INTF_Motor_HandleTypeDef *self) {
     BrushPWM_Motor_ResDataTypeDef *motor=self->private_data;
-
-    __HAL_TIM_SET_COMPARE(motor->config.htim,motor->config.channel,self->real_speed);
+    __HAL_TIM_SET_COMPARE(motor->config.htim,motor->config.channel,fabs(self->real_speed));
     //*motor->config.ccr = CLAMP(abs(self->target_speed), 0, motor->config.htim->Instance->ARR);
      HAL_GPIO_WritePin(motor->config.GPIOx, motor->config.GPIO_Pin,(self->direction*self->real_speed) >= 0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
@@ -39,11 +62,16 @@ static void motor_set_pwm(INTF_Motor_HandleTypeDef *self) {
 static void motor_set_speed(INTF_Motor_HandleTypeDef* self,float speed)
 {   // 在motor_set_pwm中增加范围限制
     // self->target_speed=speed;
-    BrushPWM_Motor_ResDataTypeDef *motor=self->private_data;
-    MotorCondition *condition=motor->condition;
-    int p=motor->config.htim->Init.Period-1;
-    condition->rateFIFO[2]=CLAMP(speed, -p,p);
-    self->real_speed =CalRate(condition);
+        BrushPWM_Motor_ResDataTypeDef *motor = self->private_data;
+        MotorCondition *condition = motor->condition;
+        int p = motor->config.htim->Init.Period - 1;
+        // 限制输入范围
+        float clamped_speed = CLAMP(speed, -p, p);
+        // 使用卡尔曼滤波进行平滑
+        self->real_speed = kalman_update(&condition->kf, clamped_speed);
+    // int p=motor->config.htim->Init.Period-1;
+    // condition->rateFIFO[2]=CLAMP(speed, -p,p);
+    // self->real_speed =CalRate(condition);
 }
 
 static void motor_mainloop() {
@@ -73,6 +101,8 @@ INTF_Motor_HandleTypeDef* BrushPWM_Motor_Register(BrushPWM_Motor_ConfigTypeDef* 
     // 分配并初始化 MotorCondition
     priv->condition = JUST_MALLOC(sizeof(MotorCondition));
     memset(priv->condition, 0, sizeof(MotorCondition));
+    // 初始化卡尔曼滤波器：初始值为 0，初始误差为 1，过程噪声 0.1，测量噪声 0.5
+    kalman_init(&priv->condition->kf, 0.0f, 1.0f, 0.3f, 0.5f);
 
     motor->private_data = priv;
     motor->motor_id = config->motor_id;
