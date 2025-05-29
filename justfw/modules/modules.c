@@ -37,8 +37,8 @@ void Modules_Init() {
 #endif
 
     MotorManager_Init();
-    //
-    // DR16_Init();
+
+    DR16_Init();
     //
     // BrushPWM_Motor_Init();
     // MW_Chassis_Init();
