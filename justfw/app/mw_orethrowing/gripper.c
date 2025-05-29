@@ -1,6 +1,14 @@
 
 #include "gripper.h"
+
+#include <cmsis_os2.h>
+#include <i2c.h>
+
+
+
 #include <tim.h>
+#include "pca9685.h"
+
 
 float servo1_angle = 135;//初始角度
 float servo2_angle = 135;
@@ -47,12 +55,16 @@ void SetAngle(float angle , uint32_t servo_num){
 
 void gripper_MainLoop()
 {
-    vTaskDelay(3); // 等待电机启动
+    vTaskDelay(1000); // 等待电机启动
     // SetAngle(0 , servo_1);
+    PCA9685_Init(&hi2c3);
+    // PCA9685_SetServoAngle(1,90);
     while (1)
     {
         // HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,GPIO_PIN_RESET);
         // __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_1,1500);
+        PCA9685_SetServoAngle(3,0);
+
 
         if(rc_ctrl[0].rc.switch_left == 1 && rc_ctrl[0].rc.switch_right == 2)
         {
