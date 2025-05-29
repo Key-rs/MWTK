@@ -37,12 +37,12 @@ void Modules_Init() {
 #endif
 
     MotorManager_Init();
-
-    DR16_Init();
     //
-    // BrushPWM_Motor_Init();
-    // MW_Chassis_Init();
-    // MAILUNTOUKUANG_Logic_Init();
+    DR16_Init();
+
+    BrushPWM_Motor_Init();
+    MW_Chassis_Init();
+    MAILUNTOUKUANG_Logic_Init();
 
     extern void gripper_Init();
     gripper_Init();

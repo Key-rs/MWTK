@@ -8,6 +8,8 @@
 #include "shared_ptr_intf.h"
 #include "tim.h"
 osThreadId MW_Logic_MainLoopTaskHandle;
+INTF_Motor_HandleTypeDef *steeper_;
+INTF_Motor_HandleTypeDef *steeper1;
 
 INTF_Chassis_HandleTypeDef *g_MW_logic_chassis;
 RC_ctrl_t *MW_logic_rc_ctrl;
@@ -34,6 +36,36 @@ void MW_Logic_MainLoop() {
 
                 // DM1->set_angle(DM1,MW_logic_rc_ctrl[0].rc.dial / 660.0f*12.5);
             }
+
+            if(MW_logic_rc_ctrl[0].rc.switch_left == 1 && MW_logic_rc_ctrl[0].rc.switch_right == 3)
+            {        __HAL_TIM_SET_PRESCALER(&htim8, 84);
+                __HAL_TIM_SET_AUTORELOAD(&htim8, 50);
+                if (MW_logic_rc_ctrl[0].rc.rocker_l1>200)
+                {
+                    steeper_->set_speed(steeper_,30);
+                } else if (MW_logic_rc_ctrl[0].rc.rocker_l1<-200)
+                {
+                    steeper_->set_speed(steeper_,-30);
+                }else
+                {
+                    steeper_->set_speed(steeper_,0);
+
+                }
+
+                 if (MW_logic_rc_ctrl[0].rc.rocker_r1>200)
+                {
+                    steeper1->set_speed(steeper1,30);
+                } else if (MW_logic_rc_ctrl[0].rc.rocker_r1<-200)
+                {
+                    steeper1->set_speed(steeper1,-30);
+                }
+                else
+                {
+                    steeper1->set_speed(steeper1,0);
+
+                }
+            }
+
         }else
         {
             g_MW_logic_chassis->target_speed_x = 0;
@@ -50,6 +82,9 @@ void MAILUNTOUKUANG_Logic_Init() {
     // DM1=pvSharePtr("/motor/shovelDM1", sizeof(INTF_Motor_HandleTypeDef));
     g_MW_logic_chassis = pvSharePtr("chassis", sizeof(INTF_Chassis_HandleTypeDef));
     MW_logic_rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
+
+    steeper_ = pvSharePtr("steeper_", sizeof(INTF_Motor_HandleTypeDef));
+    steeper1 = pvSharePtr("steeper1", sizeof(INTF_Motor_HandleTypeDef));
 
     xTaskCreate(MW_Logic_MainLoop, "MW_Chassis_MainLoopTask", 512, NULL, 200, NULL);
 }

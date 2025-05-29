@@ -4,7 +4,6 @@
 #include "motor_manager_config.h"
 #include "user_lib.h"
 
-#define CLAMP(x, min, max) ((x) < (min) ? (min) : ((x) > (max) ? (max) : (x)))//防止超出范围
 
 static List_t motors;
 
@@ -164,6 +163,28 @@ void BrushPWM_Motor_Init() {
         .GPIO_Pin = GPIO_PIN_2,
     };
     BrushPWM_Motor_Register(&config4);
+
+    BrushPWM_Motor_ConfigTypeDef steeper_ = {
+        .motor_ptr_name = "steeper_",
+        .direction = -1.0f,
+        .motor_id = 5,
+        .htim =&htim8,
+        .channel = TIM_CHANNEL_1,
+        .GPIOx = GPIOC,
+        .GPIO_Pin = GPIO_PIN_7,
+    };
+    BrushPWM_Motor_Register(&steeper_);
+
+    BrushPWM_Motor_ConfigTypeDef steeper1 = {
+        .motor_ptr_name = "steeper1",
+        .direction = 1.0f,
+        .motor_id = 6,
+        .htim =&htim8,
+        .channel = TIM_CHANNEL_3,
+        .GPIOx = GPIOC,
+        .GPIO_Pin = GPIO_PIN_9,
+    };
+    BrushPWM_Motor_Register(&steeper1);
 
     xTaskCreate(motor_mainloop, "BR_Motor", 256, NULL, 124, NULL);
 }
