@@ -54,5 +54,6 @@ typedef struct BrushPWM_Motor_ResData {
 
 void BrushPWM_Motor_Init();
 INTF_Motor_HandleTypeDef *BrushPWM_Motor_Register(BrushPWM_Motor_ConfigTypeDef *config);
+#define CLAMP(x, min, max) ((x) < (min) ? (min) : ((x) > (max) ? (max) : (x)))//防止超出范围
 
 #endif
