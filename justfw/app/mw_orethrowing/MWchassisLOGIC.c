@@ -48,7 +48,6 @@ void MW_Logic_MainLoop() {
                 }else
                 {
                     steeper_->set_speed(steeper_,0);
-
                 }
 
                  if (MW_logic_rc_ctrl[0].rc.rocker_r1>200)

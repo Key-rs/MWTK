@@ -30,7 +30,6 @@ USB_DEVICE/
 .cproject
 .mxproject
 .project
-# /CMakeLists.txt
 CMakeLists_template.txt
 
 build.ninja
