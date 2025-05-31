@@ -19,6 +19,37 @@ INTF_Motor_HandleTypeDef *DM1;
 #define CHASSIS_SPEED_W_MAX 1000.0f
 
 extern int g_dr16_is_connected;
+void Steper_Logic()
+{
+    if(MW_logic_rc_ctrl[0].rc.switch_left == 1 && MW_logic_rc_ctrl[0].rc.switch_right == 3)
+    {
+        __HAL_TIM_SET_PRESCALER(&htim8, 84);
+        __HAL_TIM_SET_AUTORELOAD(&htim8, 50);
+        if (MW_logic_rc_ctrl[0].rc.rocker_l1>200)
+        {
+            steeper_->set_speed(steeper_,30);
+        } else if (MW_logic_rc_ctrl[0].rc.rocker_l1<-200)
+        {
+            steeper_->set_speed(steeper_,-30);
+        }else
+        {
+            steeper_->set_speed(steeper_,0);
+        }
+
+        if (MW_logic_rc_ctrl[0].rc.rocker_r1>200)
+        {
+            steeper1->set_speed(steeper1,30);
+        } else if (MW_logic_rc_ctrl[0].rc.rocker_r1<-200)
+        {
+            steeper1->set_speed(steeper1,-30);
+        }
+        else
+        {
+            steeper1->set_speed(steeper1,0);
+        }
+    }
+}
+
 
 void MW_Logic_MainLoop() {
     osDelay(3000);  // 等待其他模块初始化
@@ -35,35 +66,7 @@ void MW_Logic_MainLoop() {
 
                 // DM1->set_angle(DM1,MW_logic_rc_ctrl[0].rc.dial / 660.0f*12.5);
             }
-
-            if(MW_logic_rc_ctrl[0].rc.switch_left == 1 && MW_logic_rc_ctrl[0].rc.switch_right == 3)
-            {        __HAL_TIM_SET_PRESCALER(&htim8, 84);
-                __HAL_TIM_SET_AUTORELOAD(&htim8, 50);
-                if (MW_logic_rc_ctrl[0].rc.rocker_l1>200)
-                {
-                    steeper_->set_speed(steeper_,30);
-                } else if (MW_logic_rc_ctrl[0].rc.rocker_l1<-200)
-                {
-                    steeper_->set_speed(steeper_,-30);
-                }else
-                {
-                    steeper_->set_speed(steeper_,0);
-                }
-
-                 if (MW_logic_rc_ctrl[0].rc.rocker_r1>200)
-                {
-                    steeper1->set_speed(steeper1,30);
-                } else if (MW_logic_rc_ctrl[0].rc.rocker_r1<-200)
-                {
-                    steeper1->set_speed(steeper1,-30);
-                }
-                else
-                {
-                    steeper1->set_speed(steeper1,0);
-
-                }
-            }
-
+        Steper_Logic();
         }else
         {
             g_MW_logic_chassis->target_speed_x = 0;
