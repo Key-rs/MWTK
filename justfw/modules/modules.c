@@ -28,8 +28,7 @@ void Modules_Init() {
 #endif
 
 #ifdef USE_DM_MOTOR_DRIVER
-    // extern void DM_Motor_Init();
-    // DM_Motor_Init();
+
 #endif
 
 #ifdef USE_BrushESC775_DRIVER
@@ -39,7 +38,8 @@ void Modules_Init() {
     MotorManager_Init();
     //
     DR16_Init();
-
+    extern void DM_Motor_Init();
+    DM_Motor_Init();
     BrushPWM_Motor_Init();
     MW_Chassis_Init();
     MAILUNTOUKUANG_Logic_Init();
