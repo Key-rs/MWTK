@@ -64,7 +64,9 @@ void MW_Logic_MainLoop() {
                 g_MW_logic_chassis->target_speed_y = MW_logic_rc_ctrl[0].rc.rocker_l1 / 660.0f * CHASSIS_SPEED_Y_MAX;
                 g_MW_logic_chassis->target_speed_w = MW_logic_rc_ctrl[0].rc.rocker_r_ / 660.0f * CHASSIS_SPEED_W_MAX;
 
-                // DM1->set_angle(DM1,MW_logic_rc_ctrl[0].rc.dial / 660.0f*12.5);
+                 // DM1->set_speed(DM1,MW_logic_rc_ctrl[0].rc.dial / 660.0f*20);
+                 DM1->set_torque(DM1,MW_logic_rc_ctrl[0].rc.rocker_r1/ 660.0f*2);
+
             }
         Steper_Logic();
         }else
@@ -80,7 +82,7 @@ void MW_Logic_MainLoop() {
 
 void MAILUNTOUKUANG_Logic_Init() {
 
-    // DM1=pvSharePtr("/motor/shovelDM1", sizeof(INTF_Motor_HandleTypeDef));
+     DM1=pvSharePtr("DM1", sizeof(INTF_Motor_HandleTypeDef));
     g_MW_logic_chassis = pvSharePtr("chassis", sizeof(INTF_Chassis_HandleTypeDef));
     MW_logic_rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
 
