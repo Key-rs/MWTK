@@ -20,9 +20,9 @@
 #define MIN_ANGLE3 15
 #define MAX_ANGLE3 240
 #define MIN_ANGLE4 0
-#define MAX_ANGLE4 135
+#define MAX_ANGLE4 270
 #define MIN_ANGLE5 0
-#define MAX_ANGLE5 140
+#define MAX_ANGLE5 270
 #define STEP1 1.0f
 #define STEP2 1.0f
 #define STEP3 1.0f
