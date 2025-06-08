@@ -152,6 +152,19 @@ void gripper_MainLoop()
             }
             vTaskDelay(1);
         }
+        if(rc_ctrl[0].rc.switch_left == 1 && rc_ctrl[0].rc.switch_right == 3)
+        {
+            if (rc_ctrl[0].rc.dial < -100)
+            {
+                PCA9685_SetServoAngle(5,0);
+            }
+            vTaskDelay(1);
+            if (rc_ctrl[0].rc.dial > 100)
+            {
+                PCA9685_SetServoAngle(5,20);
+            }
+            vTaskDelay(1);
+        }
 
 
 
