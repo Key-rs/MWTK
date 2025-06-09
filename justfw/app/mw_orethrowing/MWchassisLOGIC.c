@@ -68,6 +68,8 @@ void MW_Logic_MainLoop() {
                  // DM1->set_torque(DM1,MW_logic_rc_ctrl[0].rc.rocker_r1/ 660.0f*15);
 
             }
+            if (MW_logic_rc_ctrl[0].rc.switch_left==2 && MW_logic_rc_ctrl[0].rc.switch_right==2)
+                DM1->set_torque(DM1,MW_logic_rc_ctrl[0].rc.rocker_r1/ 660.0f*15);
         Steper_Logic();
         }else
         {
