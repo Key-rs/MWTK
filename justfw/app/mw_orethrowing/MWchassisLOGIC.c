@@ -19,36 +19,36 @@ INTF_Motor_HandleTypeDef *DM1;
 #define CHASSIS_SPEED_W_MAX 1000.0f
 
 extern int g_dr16_is_connected;
-void Steper_Logic()
-{
-    if(MW_logic_rc_ctrl[0].rc.switch_left == 1 && MW_logic_rc_ctrl[0].rc.switch_right == 3)
-    {
-        __HAL_TIM_SET_PRESCALER(&htim8, 84);
-        __HAL_TIM_SET_AUTORELOAD(&htim8, 50);
-        if (MW_logic_rc_ctrl[0].rc.rocker_l1>200)
-        {
-            steeper_->set_speed(steeper_,30);
-        } else if (MW_logic_rc_ctrl[0].rc.rocker_l1<-200)
-        {
-            steeper_->set_speed(steeper_,-30);
-        }else
-        {
-            steeper_->set_speed(steeper_,0);
-        }
-
-        if (MW_logic_rc_ctrl[0].rc.rocker_r1>200)
-        {
-            steeper1->set_speed(steeper1,30);
-        } else if (MW_logic_rc_ctrl[0].rc.rocker_r1<-200)
-        {
-            steeper1->set_speed(steeper1,-30);
-        }
-        else
-        {
-            steeper1->set_speed(steeper1,0);
-        }
-    }
-}
+// void Steper_Logic()
+// {
+//     if(MW_logic_rc_ctrl[0].rc.switch_left == 1 && MW_logic_rc_ctrl[0].rc.switch_right == 3)
+//     {
+//         __HAL_TIM_SET_PRESCALER(&htim8, 84);
+//         __HAL_TIM_SET_AUTORELOAD(&htim8, 50);
+//         if (MW_logic_rc_ctrl[0].rc.rocker_l1>200)
+//         {
+//             steeper_->set_speed(steeper_,30);
+//         } else if (MW_logic_rc_ctrl[0].rc.rocker_l1<-200)
+//         {
+//             steeper_->set_speed(steeper_,-30);
+//         }else
+//         {
+//             steeper_->set_speed(steeper_,0);
+//         }
+//
+//         if (MW_logic_rc_ctrl[0].rc.rocker_r1>200)
+//         {
+//             steeper1->set_speed(steeper1,30);
+//         } else if (MW_logic_rc_ctrl[0].rc.rocker_r1<-200)
+//         {
+//             steeper1->set_speed(steeper1,-30);
+//         }
+//         else
+//         {
+//             steeper1->set_speed(steeper1,0);
+//         }
+//     }
+// }
 
 
 void MW_Logic_MainLoop() {
@@ -68,6 +68,7 @@ void MW_Logic_MainLoop() {
                  // DM1->set_torque(DM1,MW_logic_rc_ctrl[0].rc.rocker_r1/ 660.0f*15);
 
             }
+        // Steper_Logic();
             if (MW_logic_rc_ctrl[0].rc.switch_left==2 && MW_logic_rc_ctrl[0].rc.switch_right==2)
                 DM1->set_torque(DM1,MW_logic_rc_ctrl[0].rc.rocker_r1/ 660.0f*15);
         Steper_Logic();
@@ -88,8 +89,8 @@ void MAILUNTOUKUANG_Logic_Init() {
     g_MW_logic_chassis = pvSharePtr("chassis", sizeof(INTF_Chassis_HandleTypeDef));
     MW_logic_rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t)*2);
 
-    steeper_ = pvSharePtr("steeper_", sizeof(INTF_Motor_HandleTypeDef));
-    steeper1 = pvSharePtr("steeper1", sizeof(INTF_Motor_HandleTypeDef));
+    // steeper_ = pvSharePtr("steeper_", sizeof(INTF_Motor_HandleTypeDef));
+    // steeper1 = pvSharePtr("steeper1", sizeof(INTF_Motor_HandleTypeDef));
 
     xTaskCreate(MW_Logic_MainLoop, "MW_Chassis_MainLoopTask", 512, NULL, 200, NULL);
 }
