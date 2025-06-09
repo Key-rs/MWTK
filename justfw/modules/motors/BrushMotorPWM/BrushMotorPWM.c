@@ -37,7 +37,6 @@ float CalRate(MotorCondition *condition) {
     for (int i=0; i<3; i++) {
         fifo += condition->rateFIFO[i];
         condition->rateFIFO[i] =condition->rateFIFO[i+1];
-
     }
     condition->rate = fifo/3;
     // [3] 将当前计算的rate存入缓冲区当前索引位置
@@ -164,27 +163,27 @@ void BrushPWM_Motor_Init() {
     };
     BrushPWM_Motor_Register(&config4);
 
-    BrushPWM_Motor_ConfigTypeDef steeper_ = {
-        .motor_ptr_name = "steeper_",
-        .direction = -1.0f,
-        .motor_id = 5,
-        .htim =&htim8,
-        .channel = TIM_CHANNEL_1,
-        .GPIOx = GPIOC,
-        .GPIO_Pin = GPIO_PIN_7,
-    };
-    BrushPWM_Motor_Register(&steeper_);
-
-    BrushPWM_Motor_ConfigTypeDef steeper1 = {
-        .motor_ptr_name = "steeper1",
-        .direction = 1.0f,
-        .motor_id = 6,
-        .htim =&htim8,
-        .channel = TIM_CHANNEL_3,
-        .GPIOx = GPIOC,
-        .GPIO_Pin = GPIO_PIN_9,
-    };
-    BrushPWM_Motor_Register(&steeper1);
+    // BrushPWM_Motor_ConfigTypeDef steeper_ = {
+    //     .motor_ptr_name = "steeper_",
+    //     .direction = -1.0f,
+    //     .motor_id = 5,
+    //     .htim =&htim8,
+    //     .channel = TIM_CHANNEL_1,
+    //     .GPIOx = GPIOC,
+    //     .GPIO_Pin = GPIO_PIN_7,
+    // };
+    // BrushPWM_Motor_Register(&steeper_);
+    //
+    // BrushPWM_Motor_ConfigTypeDef steeper1 = {
+    //     .motor_ptr_name = "steeper1",
+    //     .direction = 1.0f,
+    //     .motor_id = 6,
+    //     .htim =&htim8,
+    //     .channel = TIM_CHANNEL_3,
+    //     .GPIOx = GPIOC,
+    //     .GPIO_Pin = GPIO_PIN_9,
+    // };
+    // BrushPWM_Motor_Register(&steeper1);
 
     xTaskCreate(motor_mainloop, "BR_Motor", 256, NULL, 124, NULL);
 }

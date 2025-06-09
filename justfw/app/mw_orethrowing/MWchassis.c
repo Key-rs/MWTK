@@ -17,7 +17,6 @@ static INTF_Motor_HandleTypeDef *Brush775BR;
 
 #include "MWchassis.h"
 
-#include <cmsis_os.h>
 
 
 
@@ -68,7 +67,6 @@ void MW_Chassis_MainLoop() {
         MW_Chassis_SetSpeed(g_mw_chassis, g_mw_chassis->target_speed_x, g_mw_chassis->target_speed_y, g_mw_chassis->target_speed_w);
         osDelay(5);
     }
-
 }
 
 void MW_Chassis_Init() {
