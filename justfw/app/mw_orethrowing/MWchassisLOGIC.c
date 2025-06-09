@@ -65,7 +65,7 @@ void MW_Logic_MainLoop() {
                 g_MW_logic_chassis->target_speed_w = MW_logic_rc_ctrl[0].rc.rocker_r_ / 660.0f * CHASSIS_SPEED_W_MAX;
 
                  // DM1->set_speed(DM1,MW_logic_rc_ctrl[0].rc.dial / 660.0f*20);
-                 DM1->set_torque(DM1,MW_logic_rc_ctrl[0].rc.rocker_r1/ 660.0f*2);
+                 // DM1->set_torque(DM1,MW_logic_rc_ctrl[0].rc.rocker_r1/ 660.0f*15);
 
             }
         Steper_Logic();
@@ -84,7 +84,7 @@ void MAILUNTOUKUANG_Logic_Init() {
 
      DM1=pvSharePtr("DM1", sizeof(INTF_Motor_HandleTypeDef));
     g_MW_logic_chassis = pvSharePtr("chassis", sizeof(INTF_Chassis_HandleTypeDef));
-    MW_logic_rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t));
+    MW_logic_rc_ctrl = pvSharePtr("DR16", sizeof(RC_ctrl_t)*2);
 
     steeper_ = pvSharePtr("steeper_", sizeof(INTF_Motor_HandleTypeDef));
     steeper1 = pvSharePtr("steeper1", sizeof(INTF_Motor_HandleTypeDef));

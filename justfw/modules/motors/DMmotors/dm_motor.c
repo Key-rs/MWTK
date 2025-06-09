@@ -378,7 +378,7 @@ void DM_Motor_Init()
         .can_rx_topic_name = "/CAN1/RX",
         .motor_mode = MOTOR_MODE_MIT,
         .direction = 1.0f,
-        .kd = 0.0f,
+        .kd = 0.2f,
         .kp = 0.0f,
         .motor_id = 1};
     DM_Motor_Register(&config);

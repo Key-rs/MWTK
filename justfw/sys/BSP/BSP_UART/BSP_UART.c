@@ -197,7 +197,6 @@ void BSP_UART_Init() {
     };
     BSP_UART_Register(&uart2_config);
 
-#include "DR16_config.h"
 #ifdef BSP_UART_USE_CUSTOM_RC
     extern UART_HandleTypeDef huart4;
 
@@ -217,7 +216,7 @@ void BSP_UART_Init() {
     extern UART_HandleTypeDef huart4;
     UART_InstanceConfigTypeDef uart4_config = {
         .UART_handle = &huart4,
-        .recv_buff_size = 255,
+        .recv_buff_size = 36,
         .tx_buff_size = 255,
 
         .tx_buffer_name = "/stream/dbus_tx",
@@ -232,13 +231,13 @@ void BSP_UART_Init() {
     //     .UART_handle = &huart5,
     //     .recv_buff_size = 255,
     //     .tx_buff_size = 255,
-    //
+
     //     .tx_buffer_name = "/stream/referee_tx",
     //     .rx_buffer_name = "/stream/referee_rx",
-    //
+
     //     // .tx_topic_name = "/REFEREE/TX",
     //     // .rx_topic_name = "/REFEREE/RX"
-    //
+
     // };
     // BSP_UART_Register(&uart5_config);
 #endif

@@ -48,8 +48,8 @@ void MW_Chassis_SetSpeed(INTF_Chassis_HandleTypeDef *self, float speed_x, float 
 
     priv->motor_f_r->set_speed(priv->motor_f_r,speed_x - speed_y + speed_w);
     priv->motor_f_l->set_speed(priv->motor_f_l,speed_x + speed_y + speed_w);
-    priv->motor_b_l->set_speed(priv->motor_b_l,-speed_x + speed_y + speed_w);
-    priv->motor_b_r->set_speed(priv->motor_b_r,-speed_x - speed_y + speed_w);
+    priv->motor_b_l->set_speed(priv->motor_b_l,speed_x - speed_y - speed_w);
+    priv->motor_b_r->set_speed(priv->motor_b_r,speed_x + speed_y - speed_w);
 
     // priv->motor_b_l->set_speed(priv->motor_b_l,  speed_x + speed_w);  // 后左轮（纵向全向轮）
     // priv->motor_b_r->set_speed(priv->motor_b_r, -speed_x + speed_w);  // 后右轮（纵向全向轮）
