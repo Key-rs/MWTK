@@ -68,7 +68,9 @@ void gripper_MainLoop()
     {
         // HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,GPIO_PIN_RESET);
         // __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_1,1500);
-        // PCA9685_SetServoAngle(4,135);
+        // PCA9685_SetServoAngle(0,90);
+        // PCA9685_SetServoAngle(1,0);
+
 
 
 
@@ -161,7 +163,7 @@ void gripper_MainLoop()
             vTaskDelay(1);
             if (rc_ctrl[0].rc.dial > 100)
             {
-                PCA9685_SetServoAngle(5,30);
+                PCA9685_SetServoAngle(5,50);
             }
             vTaskDelay(1);
         }

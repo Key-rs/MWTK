@@ -75,7 +75,7 @@ void MW_Logic_MainLoop() {
         // Steper_Logic();
             if (MW_logic_rc_ctrl[0].rc.switch_left==2 && MW_logic_rc_ctrl[0].rc.switch_right==2)
                 DM1->set_torque(DM1,MW_logic_rc_ctrl[0].rc.rocker_r1/ 660.0f*15);
-            printf("DM1:%f",DM1->real_angle);
+            // printf("DM1:%f",DM1->real_angle);
         // Steper_Logic();
         }else
         {
