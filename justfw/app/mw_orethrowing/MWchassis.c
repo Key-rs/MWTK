@@ -3,6 +3,7 @@
 #include "cmsis_os.h"
 #include "intf_motor.h"
 #include "shared_ptr_intf.h"
+#include "MWchassis.h"
 
 static RC_ctrl_t *rc;
 static INTF_Motor_HandleTypeDef *Brush775FL;
@@ -10,25 +11,12 @@ static INTF_Motor_HandleTypeDef *Brush775FR;
 static INTF_Motor_HandleTypeDef *Brush775BL;
 static INTF_Motor_HandleTypeDef *Brush775BR;
 
-
-//
-// Created by ASUS on 25-4-1.
-//
-
-#include "MWchassis.h"
-
-
-
-
 osThreadId MW_Chassis_MainLoopTaskHandle;
 INTF_Chassis_HandleTypeDef *g_mw_chassis;
 
 // 轮子中心构成的矩形的大小 单位m
 #define Chassis_Width 0.49
 #define Chassis_Length 0.35
-// 电机的减速比
-#define Motor_DECELE_RATIO 1.0f  // 这是3508的
-// #define Motor_DECELE_RATIO 19.203f //这是3508的
 
 // 轮子半径 单位m
 #define WHEEL_R 1.0f

@@ -302,15 +302,14 @@ INTF_Motor_HandleTypeDef *C620_Register(C620_ConfigTypeDef *config) {
 void C620_Init()
 {
     PID_Init_Config_s angle_pid = {
-        .Kp = 0.9f,       // 提高比例增益，加快响应速度
+        .Kp = 1.4f,       // 提高比例增益，加快响应速度
         .Ki = 0.1f,       // 保持积分增益，维持稳态精度
-        .Kd = 0.7f,       // 增大微分增益，抑制抖动
+        .Kd = 0.0f,       // 增大微分增益，抑制抖动
         .MaxOut = 1000.0f,
-        .DeadBand = 0.02f, // 缩小死区，减少小误差下的抖动
+        .DeadBand = 0.01f, // 缩小死区，减少小误差下的抖动
         .Improve = PID_Integral_Limit | PID_OutputFilter,
         .Output_LPF_RC = 0.1f, // 启用低通滤波
     };
-
     PID_Init_Config_s speed_pid = {
         .Kp = 0.25f,      // 降低比例增益，减少速度波动
         .Ki = 0.02f,      // 保持积分增益，维持稳态精度
@@ -336,7 +335,7 @@ void C620_Init()
     C620_ConfigTypeDef config1 = {
         .motor_id = 1,
         .motor_ptr_name = "GMMotor1",
-        .motor_mode = MOTOR_MODE_SPEED,
+        .motor_mode = MOTOR_MODE_ANGLE,
         .direction = -1.0f,
         .torque_feed_forward = C620_Torque2Current(1.0f),  // 未测试
         .angle_pid_config = &angle_pid,

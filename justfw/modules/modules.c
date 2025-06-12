@@ -8,7 +8,9 @@
 #include "MWchassis.h"
 #include "MWchassisLOGIC.h"
 #include "orechassis.h"
+#include "SuperBig.h"
 
+#define USE_GM_MOTOR_DRIVER
 void Modules_Init() {
     __disable_irq();
 
@@ -36,13 +38,12 @@ void Modules_Init() {
 #endif
 
     MotorManager_Init();
-    //
     DR16_Init();
-    extern void DM_Motor_Init();
-    DM_Motor_Init();
+
     BrushPWM_Motor_Init();
     MW_Chassis_Init();
     MAILUNTOUKUANG_Logic_Init();
+    // SuperBig_Init();
 
     extern void gripper_Init();
     gripper_Init();
