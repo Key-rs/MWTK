@@ -68,105 +68,128 @@ void gripper_MainLoop()
     {
         // HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,GPIO_PIN_RESET);
         // __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_1,1500);
-        // PCA9685_SetServoAngle(0,90);
-        // PCA9685_SetServoAngle(1,0);
+        PCA9685_SetServoAngle(0,0);
+        vTaskDelay(1000);
+        PCA9685_SetServoAngle(1,0);
+        vTaskDelay(1000);
+        PCA9685_SetServoAngle(2,10);
+        vTaskDelay(100);
+        PCA9685_SetServoAngle(3,160);
 
-
-
-
-
-        if(rc_ctrl[0].rc.switch_left == 1 && rc_ctrl[0].rc.switch_right == 2)
+        if (rc_ctrl[0].rc.switch_left == 1)//爪子抓矿状态
         {
 
-            
-        if(rc_ctrl[0].rc.rocker_r_ > 100)
-            {
-            if(servo1_angle <= MAX_ANGLE1)
-                {
-                SetAngle(servo1_angle + STEP1,servo_1);
-
-                }
-            }
-        if(rc_ctrl[0].rc.rocker_r_ < -100)
-            {
-            if(servo1_angle >= MIN_ANGLE1)
-                {
-                SetAngle(servo1_angle - STEP1,servo_1);
-                }
-            }
-
-
-
-        if(rc_ctrl[0].rc.rocker_l_ > 100)
-            {
-            if(servo2_angle <= MAX_ANGLE2)
-                {
-                SetAngle(servo2_angle + STEP2,servo_2);
-                }
-            }
-        if(rc_ctrl[0].rc.rocker_l_ < -100)
-            {
-            if(servo2_angle >= MIN_ANGLE2)
-                {
-                SetAngle(servo2_angle - STEP2,servo_2);
-                }
-            }
-
-
-        if(rc_ctrl[0].rc.rocker_r1 > 100)
-            {
-            if(servo3_angle >= MIN_ANGLE3)
-            {
-                SetAngle(servo3_angle - STEP3,servo_3);
-            }
-            }
-        if(rc_ctrl[0].rc.rocker_r1 < -100)
-            {
-            if(servo3_angle <= MAX_ANGLE3)
-            {
-                SetAngle(servo3_angle + STEP3,servo_3);
-            }
-
-            }
-        if (rc_ctrl[0].rc.rocker_l1 > 100)
-            {
-            if(servo4_angle <= MAX_ANGLE4)
-                {
-                SetAngle(servo4_angle + STEP4,servo_4);
-                }
-            }
-        if (rc_ctrl[0].rc.rocker_l1 < -100)
-            {
-            if(servo4_angle >= MIN_ANGLE4)
-                {
-                SetAngle(servo4_angle - STEP4,servo_4);
-                }
-            }
-            if (rc_ctrl[0].rc.dial >100)
-            {
-                if(servo5_angle <= MAX_ANGLE5)
-                SetAngle(servo5_angle + STEP5,servo_5);
-            }
-            if (rc_ctrl[0].rc.dial < -100)
-            {
-                if(servo5_angle >= MIN_ANGLE5)
-                SetAngle(servo5_angle - STEP5,servo_5);
-            }
-            vTaskDelay(1);
         }
-        if(rc_ctrl[0].rc.switch_left == 1 && rc_ctrl[0].rc.switch_right == 3)
+        if (rc_ctrl[0].rc.switch_left == 2)//爪子放矿状态
         {
-            if (rc_ctrl[0].rc.dial < -100)
-            {
-                PCA9685_SetServoAngle(5,0);
-            }
-            vTaskDelay(1);
-            if (rc_ctrl[0].rc.dial > 100)
-            {
-                PCA9685_SetServoAngle(5,50);
-            }
-            vTaskDelay(1);
+
         }
+
+
+        if (rc_ctrl[0].rc.dial < -100)//扳机发射
+        {
+            PCA9685_SetServoAngle(5,0);
+        }
+        vTaskDelay(1);
+        if (rc_ctrl[0].rc.dial > 100)//静默
+        {
+            PCA9685_SetServoAngle(5,50);
+        }
+        vTaskDelay(1);
+
+
+        // if(rc_ctrl[0].rc.switch_left == 1 && rc_ctrl[0].rc.switch_right == 2)
+        // {
+        //
+        //
+        // if(rc_ctrl[0].rc.rocker_r_ > 100)
+        //     {
+        //     if(servo1_angle <= MAX_ANGLE1)
+        //         {
+        //         SetAngle(servo1_angle + STEP1,servo_1);
+        //
+        //         }
+        //     }
+        // if(rc_ctrl[0].rc.rocker_r_ < -100)
+        //     {
+        //     if(servo1_angle >= MIN_ANGLE1)
+        //         {
+        //         SetAngle(servo1_angle - STEP1,servo_1);
+        //         }
+        //     }
+        //
+        //
+        //
+        // if(rc_ctrl[0].rc.rocker_l_ > 100)
+        //     {
+        //     if(servo2_angle <= MAX_ANGLE2)
+        //         {
+        //         SetAngle(servo2_angle + STEP2,servo_2);
+        //         }
+        //     }
+        // if(rc_ctrl[0].rc.rocker_l_ < -100)
+        //     {
+        //     if(servo2_angle >= MIN_ANGLE2)
+        //         {
+        //         SetAngle(servo2_angle - STEP2,servo_2);
+        //         }
+        //     }
+        //
+        //
+        // if(rc_ctrl[0].rc.rocker_r1 > 100)
+        //     {
+        //     if(servo3_angle >= MIN_ANGLE3)
+        //     {
+        //         SetAngle(servo3_angle - STEP3,servo_3);
+        //     }
+        //     }
+        // if(rc_ctrl[0].rc.rocker_r1 < -100)
+        //     {
+        //     if(servo3_angle <= MAX_ANGLE3)
+        //     {
+        //         SetAngle(servo3_angle + STEP3,servo_3);
+        //     }
+        //
+        //     }
+        // if (rc_ctrl[0].rc.rocker_l1 > 100)
+        //     {
+        //     if(servo4_angle <= MAX_ANGLE4)
+        //         {
+        //         SetAngle(servo4_angle + STEP4,servo_4);
+        //         }
+        //     }
+        // if (rc_ctrl[0].rc.rocker_l1 < -100)
+        //     {
+        //     if(servo4_angle >= MIN_ANGLE4)
+        //         {
+        //         SetAngle(servo4_angle - STEP4,servo_4);
+        //         }
+        //     }
+        //     if (rc_ctrl[0].rc.dial >100)
+        //     {
+        //         if(servo5_angle <= MAX_ANGLE5)
+        //         SetAngle(servo5_angle + STEP5,servo_5);
+        //     }
+        //     if (rc_ctrl[0].rc.dial < -100)
+        //     {
+        //         if(servo5_angle >= MIN_ANGLE5)
+        //         SetAngle(servo5_angle - STEP5,servo_5);
+        //     }
+        //     vTaskDelay(1);
+        // }
+        // if(rc_ctrl[0].rc.switch_left == 1 && rc_ctrl[0].rc.switch_right == 3)
+        // {
+        //     if (rc_ctrl[0].rc.dial < -100)
+        //     {
+        //         PCA9685_SetServoAngle(5,0);
+        //     }
+        //     vTaskDelay(1);
+        //     if (rc_ctrl[0].rc.dial > 100)
+        //     {
+        //         PCA9685_SetServoAngle(5,50);
+        //     }
+        //     vTaskDelay(1);
+        // }
 
 
 

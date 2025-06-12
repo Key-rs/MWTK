@@ -21,11 +21,14 @@ void MW_Logic_MainLoop() {
     osDelay(3000);  // 等待其他模块初始化
     while (1) {
         if (g_dr16_is_connected) {
-            if (MW_logic_rc_ctrl[0].rc.switch_left == 1 && MW_logic_rc_ctrl[0].rc.switch_right == 1) {
+            if (MW_logic_rc_ctrl[0].rc.switch_left == 1 || MW_logic_rc_ctrl[0].rc.switch_left == 2 ) {
                 g_MW_logic_chassis->target_speed_x = MW_logic_rc_ctrl[0].rc.rocker_l_ / 660.0f * CHASSIS_SPEED_X_MAX;
                 g_MW_logic_chassis->target_speed_y = MW_logic_rc_ctrl[0].rc.rocker_l1 / 660.0f * CHASSIS_SPEED_Y_MAX;
                 g_MW_logic_chassis->target_speed_w = MW_logic_rc_ctrl[0].rc.rocker_r_ / 660.0f * CHASSIS_SPEED_W_MAX;
             }
+
+
+
         }else
         {
             g_MW_logic_chassis->target_speed_x = 0;

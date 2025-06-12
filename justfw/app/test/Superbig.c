@@ -19,12 +19,12 @@ static void SuperBig_MainLoop()
             static float state=0,temp=0;
         if (g_dr16_is_connected)
         {
-            if (Super_logic_rc_ctrl[0].rc.switch_left==1&&Super_logic_rc_ctrl[0].rc.switch_right==1&&(Super_logic_rc_ctrl[0].rc.rocker_r1<-500))
+            if (Super_logic_rc_ctrl[0].rc.switch_left==3&&Super_logic_rc_ctrl[0].rc.switch_right==1&&(Super_logic_rc_ctrl[0].rc.rocker_r1<-500))
             {
                 state=0;
             }
 
-            if (Super_logic_rc_ctrl[0].rc.switch_left==1&&Super_logic_rc_ctrl[0].rc.switch_right==1&&state==0)
+            if (Super_logic_rc_ctrl[0].rc.switch_left==3&&Super_logic_rc_ctrl[0].rc.switch_right==1&&state==0)
             {
                 GM1->target_angle=Super_logic_rc_ctrl[0].rc.rocker_l1/660.0f*fanwei;
                 if (Super_logic_rc_ctrl[0].rc.rocker_r1>500)
@@ -32,7 +32,7 @@ static void SuperBig_MainLoop()
                     state=1;
                     temp=GM1->real_angle;
                 }
-            }else if (Super_logic_rc_ctrl[0].rc.switch_left==1&&state==1)
+            }else if (Super_logic_rc_ctrl[0].rc.switch_left==3&&state==1)
             {
                 if (Super_logic_rc_ctrl[0].rc.switch_right==1)
                 {
@@ -45,11 +45,11 @@ static void SuperBig_MainLoop()
                     GM1->target_angle=temp+weizhi2;
                 }
 
-                printf("GM1:%f,%f\n", GM1->real_angle, GM1->target_angle);
+                // printf("GM1:%f,%f\n", GM1->real_angle, GM1->target_angle);
                 vTaskDelay(5);
             }
         }
-        printf("GM1:%f,%f\n", GM1->real_angle, GM1->target_angle);
+        // printf("GM1:%f,%f\n", GM1->real_angle, GM1->target_angle);
         vTaskDelay(5);
     }
 }

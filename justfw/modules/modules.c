@@ -43,7 +43,7 @@ void Modules_Init() {
     BrushPWM_Motor_Init();
     MW_Chassis_Init();
     MAILUNTOUKUANG_Logic_Init();
-    // SuperBig_Init();
+    SuperBig_Init();
 
     extern void gripper_Init();
     gripper_Init();
