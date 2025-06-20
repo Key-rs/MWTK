@@ -68,13 +68,13 @@ void gripper_MainLoop()
     {
         // HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,GPIO_PIN_RESET);
         // __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_1,1500);
-        PCA9685_SetServoAngle(0,0);
-        vTaskDelay(1000);
-        PCA9685_SetServoAngle(1,0);
-        vTaskDelay(1000);
-        PCA9685_SetServoAngle(2,10);
-        vTaskDelay(100);
-        PCA9685_SetServoAngle(3,160);
+        // PCA9685_SetServoAngle(0,0);
+        // vTaskDelay(1000);
+        // PCA9685_SetServoAngle(1,0);
+        // vTaskDelay(1000);
+        // PCA9685_SetServoAngle(2,10);
+        // vTaskDelay(100);
+        // PCA9685_SetServoAngle(3,160);
 
         if (rc_ctrl[0].rc.switch_left == 1)//爪子抓矿状态
         {
@@ -90,12 +90,12 @@ void gripper_MainLoop()
         {
             PCA9685_SetServoAngle(5,0);
         }
-        vTaskDelay(1);
+        // vTaskDelay(1);
         if (rc_ctrl[0].rc.dial > 100)//静默
         {
             PCA9685_SetServoAngle(5,50);
         }
-        vTaskDelay(1);
+        vTaskDelay(5);
 
 
         // if(rc_ctrl[0].rc.switch_left == 1 && rc_ctrl[0].rc.switch_right == 2)
@@ -193,7 +193,7 @@ void gripper_MainLoop()
 
 
 
-        vTaskDelay(1);
+        // vTaskDelay(1);
     
     }
 

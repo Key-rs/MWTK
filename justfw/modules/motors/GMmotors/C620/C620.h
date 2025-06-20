@@ -7,7 +7,7 @@
 #define C620_MOTOR_NUM 8  // 电机数量
 
 //-16384~16384 = -20A~20A
-#define C620_CURRENT_MAX 16384  //+-20A
+#define C620_CURRENT_MAX 16000  //+-10A
 #define C620_ANGLE_MAX 8191     // 0~360°
 
 // 转矩常数

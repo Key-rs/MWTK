@@ -314,7 +314,7 @@ void C620_Init()
         .Kp = 0.25f,      // 降低比例增益，减少速度波动
         .Ki = 0.02f,      // 保持积分增益，维持稳态精度
         .Kd = 0.2f,       // 增大微分增益，抑制速度抖动
-        .MaxOut = 6.0f,
+        .MaxOut = 3.0f,
         .DeadBand = 0.0f,
         .Output_LPF_RC = 0.3f, // 加强输出低通滤波
         .Improve = PID_Integral_Limit | PID_OutputFilter,
