@@ -1,5 +1,4 @@
 #include "modules.h"
-#include "main.h"
 #include "modules_config.h"
 #include "BrushESC775.h"
 #include "BrushMotorPWM.h"
@@ -7,7 +6,6 @@
 #include "gimbal.h"
 #include "MWchassis.h"
 #include "MWchassisLOGIC.h"
-#include "orechassis.h"
 #include "SuperBig.h"
 
 #define USE_GM_MOTOR_DRIVER
@@ -45,7 +43,7 @@ void Modules_Init() {
     MAILUNTOUKUANG_Logic_Init();
     SuperBig_Init();
 
-    extern void gripper_Init();
+
     gripper_Init();
     // gimbal_Init();
 
