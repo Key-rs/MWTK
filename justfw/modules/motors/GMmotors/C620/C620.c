@@ -302,7 +302,7 @@ INTF_Motor_HandleTypeDef *C620_Register(C620_ConfigTypeDef *config) {
 void C620_Init()
 {
     PID_Init_Config_s angle_pid = {
-        .Kp = 1.4f,       // 提高比例增益，加快响应速度
+        .Kp = 1.0f,       // 提高比例增益，加快响应速度
         .Ki = 0.1f,       // 保持积分增益，维持稳态精度
         .Kd = 0.0f,       // 增大微分增益，抑制抖动
         .MaxOut = 1000.0f,
@@ -311,7 +311,7 @@ void C620_Init()
         .Output_LPF_RC = 0.1f, // 启用低通滤波
     };
     PID_Init_Config_s speed_pid = {
-        .Kp = 0.25f,      // 降低比例增益，减少速度波动
+        .Kp = 0.20f,      // 降低比例增益，减少速度波动
         .Ki = 0.02f,      // 保持积分增益，维持稳态精度
         .Kd = 0.2f,       // 增大微分增益，抑制速度抖动
         .MaxOut = 3.0f,

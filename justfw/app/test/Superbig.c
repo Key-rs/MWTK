@@ -8,6 +8,20 @@ INTF_Motor_HandleTypeDef* GM1;
 #define weizhi1 -80.0f
 #define weizhi2 -130.0f
 
+#include "stm32f4xx_hal.h"
+
+static float state=0,temp=0,ready=0;
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_6) // 检查触发中断的引脚
+    {
+                    state=1;
+        temp=GM1->real_angle;
+    }
+}
+
+
 extern int g_dr16_is_connected;
 
 static void SuperBig_MainLoop()
@@ -16,15 +30,18 @@ static void SuperBig_MainLoop()
 
     while (1)
     {
-            static float state=0,temp=0;
         if (g_dr16_is_connected)
         {
-            if (Super_logic_rc_ctrl[0].rc.switch_left==3&&Super_logic_rc_ctrl[0].rc.switch_right==1&&(Super_logic_rc_ctrl[0].rc.rocker_r1<-500))
+            if (Super_logic_rc_ctrl[0].rc.switch_left==3&&
+                Super_logic_rc_ctrl[0].rc.switch_right==1&&
+                (Super_logic_rc_ctrl[0].rc.rocker_r1<-500))
             {
                 state=0;
             }
 
-            if (Super_logic_rc_ctrl[0].rc.switch_left==3&&Super_logic_rc_ctrl[0].rc.switch_right==1&&state==0)
+            if (Super_logic_rc_ctrl[0].rc.switch_left==3&&
+                Super_logic_rc_ctrl[0].rc.switch_right==1&&
+                state==0)
             {
                 GM1->target_angle=Super_logic_rc_ctrl[0].rc.rocker_l1/660.0f*fanwei;
                 if (Super_logic_rc_ctrl[0].rc.rocker_r1>500)
