@@ -44,23 +44,26 @@ void gripper_MainLoop()
 
         if (rc_ctrl[0].rc.switch_left == 1)//爪子抓矿状态
         {
-            if (rc_ctrl[0].rc.switch_right == 1)//爪子抓矿状态
+            if (rc_ctrl[0].rc.switch_right == 1 &&
+                rc_ctrl[0].rc.rocker_r1 >= 600)//爪子抓矿状态->200高度
             {
-                PCA9685_SetServoAngle(0,30);
+                PCA9685_SetServoAngle(0,30);//下
                 vTaskDelay(10);
-                PCA9685_SetServoAngle(1,205);
+                PCA9685_SetServoAngle(1,205);//中
                 vTaskDelay(10);
-                PCA9685_SetServoAngle(2,80);
+                PCA9685_SetServoAngle(2,80);//上->松爪
                 vTaskDelay(10);
             }
             // vTaskDelay(1);
 
             else if (rc_ctrl[0].rc.switch_right == 3)
             {
-                PCA9685_SetServoAngle(2,0);
+                PCA9685_SetServoAngle(2,0);//上->抓矿
                 vTaskDelay(10);
             }
-            else
+
+            else if (rc_ctrl[0].rc.switch_right == 1 &&
+                     rc_ctrl[0].rc.rocker_r1 <= -600)//爪子抓矿状态->300高度
             {
 
             }
