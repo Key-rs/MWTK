@@ -49,6 +49,14 @@ static void SuperBig_MainLoop()
                     state=1;
                     temp=GM1->real_angle;
                 }
+
+                if (Super_logic_rc_ctrl[0].rc.rocker_r_>500)
+                {
+                    state=1;
+                    // temp=GM1->real_angle;
+                }
+
+
             }else if (Super_logic_rc_ctrl[0].rc.switch_left==3&&state==1)
             {
                 if (Super_logic_rc_ctrl[0].rc.switch_right==1)
@@ -61,6 +69,8 @@ static void SuperBig_MainLoop()
                 {
                     GM1->target_angle=temp+weizhi2;
                 }
+
+
 
                 // printf("GM1:%f,%f\n", GM1->real_angle, GM1->target_angle);
                 vTaskDelay(5);

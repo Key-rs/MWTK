@@ -30,11 +30,12 @@ void gripper_MainLoop()
     {
         // HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,GPIO_PIN_RESET);
         // __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_1,1500);
-        // PCA9685_SetServoAngle(0,140);
+        // PCA9685_SetServoAngle(0,125);
         // vTaskDelay(1000);
-        // PCA9685_SetServoAngle(1,130);
+        // PCA9685_SetServoAngle(1,0);
         // vTaskDelay(1000);
-        // PCA9685_SetServoAngle(2,0);
+        // PCA9685_SetServoAngle(2,130);//50闭合，130开
+
         // vTaskDelay(100);
         // PCA9685_SetServoAngle(3,160);
         // PCA9685_SetServoAngle(5,185);
@@ -47,24 +48,30 @@ void gripper_MainLoop()
             if (rc_ctrl[0].rc.switch_right == 1 &&
                 rc_ctrl[0].rc.rocker_r1 >= 600)//爪子抓矿状态->200高度
             {
-                PCA9685_SetServoAngle(0,30);//下
+                PCA9685_SetServoAngle(0,165);//下
                 vTaskDelay(10);
-                PCA9685_SetServoAngle(1,205);//中
+                PCA9685_SetServoAngle(1,15);//中
                 vTaskDelay(10);
-                PCA9685_SetServoAngle(2,80);//上->松爪
+                PCA9685_SetServoAngle(2,130);//上->松爪
                 vTaskDelay(10);
             }
             // vTaskDelay(1);
 
             else if (rc_ctrl[0].rc.switch_right == 3)
             {
-                PCA9685_SetServoAngle(2,0);//上->抓矿
+                PCA9685_SetServoAngle(2,50);//上->抓矿
                 vTaskDelay(10);
             }
 
             else if (rc_ctrl[0].rc.switch_right == 1 &&
                      rc_ctrl[0].rc.rocker_r1 <= -600)//爪子抓矿状态->300高度
             {
+                PCA9685_SetServoAngle(0,125);//下
+                vTaskDelay(10);
+                PCA9685_SetServoAngle(1,0);//中
+                vTaskDelay(10);
+                PCA9685_SetServoAngle(2,130);//上->松爪
+                vTaskDelay(10);
 
             }
             vTaskDelay(10);
@@ -75,20 +82,21 @@ void gripper_MainLoop()
 
         if (rc_ctrl[0].rc.switch_left == 2)//爪子放矿状态
         {
-            if (rc_ctrl[0].rc.switch_right != 3)//爪子抓矿状态
+            if (rc_ctrl[0].rc.switch_right == 2 &&
+                rc_ctrl[0].rc.rocker_r1 >= 500)//爪子抓矿状态
             {
-                PCA9685_SetServoAngle(0,140);
+                PCA9685_SetServoAngle(0,70);
                 vTaskDelay(10);
-                PCA9685_SetServoAngle(1,130);
+                PCA9685_SetServoAngle(1,85);
                 vTaskDelay(10);
-                PCA9685_SetServoAngle(2,0);
+                PCA9685_SetServoAngle(2,50);
                 vTaskDelay(10);
             }
             // vTaskDelay(1);
 
             else if (rc_ctrl[0].rc.switch_right == 3)
             {
-                PCA9685_SetServoAngle(2,80);
+                PCA9685_SetServoAngle(2,130);
                 vTaskDelay(10);
             }
             vTaskDelay(10);
@@ -98,7 +106,7 @@ void gripper_MainLoop()
 
         if (rc_ctrl[0].rc.dial < -100)//静默
         {
-            PCA9685_SetServoAngle(5,180);
+            PCA9685_SetServoAngle(5,175);
         }
         // vTaskDelay(1);
         if (rc_ctrl[0].rc.dial > 100)//扳机发射
