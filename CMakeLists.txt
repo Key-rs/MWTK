@@ -1,11 +1,22 @@
-cmake_minimum_required(VERSION 3.22)
-
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_VERSION 1)
+cmake_minimum_required(VERSION 3.30)
 #
 # This file is generated only once,
 # and is not re-generated if converter is called multiple times.
 #
 # User is free to modify the file as much as necessary
 #
+
+# specify cross-compilers and tools
+set(CMAKE_C_COMPILER arm-none-eabi-gcc)
+set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
+set(CMAKE_ASM_COMPILER  arm-none-eabi-gcc)
+set(CMAKE_AR arm-none-eabi-ar)
+set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
+set(CMAKE_OBJDUMP arm-none-eabi-objdump)
+set(SIZE arm-none-eabi-size)
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # Setup compiler settings
 set(CMAKE_C_STANDARD 11)
@@ -39,11 +50,12 @@ add_compile_options(-Wno-switch)
 # 设置链接器选项
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-warn-rwx-segments")
 
+# Core project settings
+project(${CMAKE_PROJECT_NAME})
+
 # Enable CMake support for ASM and C languages
 enable_language(C ASM)
 
-# Core project settings
-project(${CMAKE_PROJECT_NAME})
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
 # Create an executable object type
