@@ -34,17 +34,30 @@ void gripper_MainLoop()
 
     // PCA9685_SetServoAngle(1,90);
 
-
+    __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_3,1000);
+    vTaskDelay(2000); // 等待电机启动
 
     while (1)
     {
         // HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,GPIO_PIN_RESET);
-        // __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_1,1500);
+
+
+
+
+        __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_3,1500);
+        // osDelay(100);
+        // // __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_3,1500);
+        // // osDelay(100);
+        // __HAL_TIM_SetCompare(&htim8,TIM_CHANNEL_3,1800);
+        // osDelay(100);
+
         // PCA9685_SetServoAngle(0,10);//顺时针减小
         // vTaskDelay(1000);
         // PCA9685_SetServoAngle(1,40);//顺时针减小
         // vTaskDelay(1000);
         // PCA9685_SetServoAngle(2,130);//50闭合，130开
+
+
 
         // vTaskDelay(100);
         // PCA9685_SetServoAngle(3,160);
@@ -144,6 +157,6 @@ void gripper_Init()
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_4);
-    // __HAL_TIM_SET_AUTORELOAD(&htim8, 20000);
+    __HAL_TIM_SET_AUTORELOAD(&htim8, 20000);
 
 }
